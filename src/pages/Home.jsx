@@ -2,6 +2,8 @@ import React, {useState} from 'react'
 import FuzzyPanel from '../Components/Stats/fuzzystats'
 import PixelSnow from '../Components/Background/pixelsnow'
 import CharacterPicker from '../Components/Character'
+import Stepper from '../Components/Stepper'
+import FuzzyProcessPanel from '../Components/Stepper/proccessPanel'
 
 import DarkVillageBg from '../assets/background/ripped_background.png'
 import WereWolfTxt from '../assets/text/werewolftext.png'
@@ -9,6 +11,42 @@ import PlayBttn from '../assets/button/playgame-button.png'
 import FourCharacter from '../assets/image/allchar.png'
 import CampFire from '../assets/image/campfirehut.png'
 import FoxCharacter from '../assets/character/fox-villager.png'
+import GirlCharacter from '../assets/character/girl-character.png'
+import WoodenSign from '../assets/image/wooden-sign.png'
+
+const fuzzyProcess = [
+    {
+        name: "Fuzzification",
+        desc: (<span>Convert player statistics into fuzzy membership values.
+                Example:
+
+                Aggression = 70 → 0.7 High, 0.3 Medium
+                Lies = 40 → 0.6 Medium, 0.4 Low</span>)
+    },
+    {
+        name: "Inference (Mamdani)",
+        desc: (<span>Apply fuzzy rules to determine suspicion.
+
+                Example:
+                IF Aggression is High
+                AND Lies is High
+                AND Vote Behavior is Erratic
+                THEN Suspicion is Very High
+                The MIN operator is used to calculate rule strength.</span>)
+    },
+    {
+        name: "Aggregation",
+        desc: (<span>Combine all activated rule outputs into a single fuzzy suspicion set using the MAX operator.
+                    Multiple rules may contribute simultaneously.</span>)
+    },
+    {
+        name: "Defuzzification",
+        desc: (<span>Calculate the Centroid (Center of Gravity) of the aggregated output to produce a final Suspicion Score.
+                Example:
+                Suspicion = 78/100
+                → NPC is highly likely to vote against that player</span>)
+    },
+]
 
 
 
@@ -190,8 +228,43 @@ function Home() {
             </div>
       </div>
       <div
-        className='w-screen bg-[#CCA584] h-[600px]'>
-        
+        className='w-screen bg-[#B45517]'>
+        <div className="max-w-6xl mx-auto px-6 md:px-10 py-16">
+            <h1 className='text-4xl text-white mb-4'>System Logic</h1>
+            <span className='text-[11px] text-[#f1f4f2] '>
+                This system simulates the reasoning process of intelligent villagers in a social deduction game. Instead of relying on fixed rules, it uses Fuzzy Logic to evaluate uncertain social behaviors and determine each player's Suspicion Score
+                The AI continuously analyzes player actions and discussion patterns to make human-like judgments during voting and accusations.
+            </span>
+            <div className='w-full flex justify-between text-white text-[10px] mt-8'>
+                  <div className='border border-white p-2 rounded-lg'>
+                    4 Behavioral Inputs
+                  </div>
+                  <div className='border border-white p-2 rounded-lg'>
+                    81-Rule Knowledge Base
+                  </div>
+                  <div className='border border-white p-2 rounded-lg'>
+                    Real-time Suspicion Calculation
+                  </div>
+            </div>
+            <div className="flex flex-col lg:flex-row items-center gap-6">
+                <div>
+                    <img
+                        src={GirlCharacter}
+                        alt="Girl Character"
+                        className="w-full max-w-xs lg:max-w-md"
+                    />
+                </div>
+
+                <div className="text-white max-w-[300px] md:max-w-[700px]">
+                    <FuzzyProcessPanel fuzzyProcess={fuzzyProcess} />
+                </div>
+            </div>
+        </div>
+      </div>
+      <div className='w-screen bg-[#2C2D0F] '>
+            <div className="max-w-6xl mx-auto px-6 md:px-10 py-16">
+                <h1 className='text-4xl text-white'>Fuzzy Variables</h1>
+            </div>
       </div>
     </>
   )
