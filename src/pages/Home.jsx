@@ -1,6 +1,7 @@
 import React, {useState} from 'react'
 import FuzzyPanel from '../Components/Stats/fuzzystats'
 import PixelSnow from '../Components/Background/pixelsnow'
+import CharacterPicker from '../Components/Character'
 
 import DarkVillageBg from '../assets/background/ripped_background.png'
 import WereWolfTxt from '../assets/text/werewolftext.png'
@@ -14,7 +15,7 @@ import FoxCharacter from '../assets/character/fox-villager.png'
 function Home() {
 
     const [panelActive, setPanelAactive] = useState(0);
-    const [characterChoose, setCharacterChoose] = useState(0)
+    const [selectedCharacter, setSelectedCharacter] = useState(0)
 
   return (
     <>
@@ -164,7 +165,7 @@ function Home() {
           </div>
         </div>
       </div>
-      <div style={{ width: '100%', height: '600px', position: 'relative' }} className='bg-[#22090D]'>
+      <div style={{ width: '100%', height: '600px', position: 'relative' }} className='bg-[#22090D] overflow-y-hidden'>
             <PixelSnow 
                 color="#ffffff"
                 flakeSize={0.01}
@@ -182,12 +183,15 @@ function Home() {
             <div className="max-w-6xl mx-auto px-6 md:px-10 py-16">
 
                 {/* title */}
-                <h1 className='text-white text-4xl'>All Roles</h1>
+                <h1 className='text-white text-4xl mb-4'>All Roles</h1>
+                <CharacterPicker
+                    selectedCharacter={selectedCharacter}
+                    onSelectCharacter={setSelectedCharacter}/>
             </div>
       </div>
       <div
-        className='w-screen bg-[#1A0B0D]'>
-            
+        className='w-screen bg-[#CCA584] h-[600px]'>
+        
       </div>
     </>
   )
