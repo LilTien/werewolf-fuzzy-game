@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: 'PixelFont';
+  src: url('./assets/fonts/DePixelHalbfett.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+body{
+  overflow-x: hidden;
+}
