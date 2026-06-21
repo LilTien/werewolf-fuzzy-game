@@ -51,9 +51,9 @@ function FuzzyProcessPanel({ fuzzyProcess = [] }) {
             </button>
 
             {/* Card */}
-            <div className="border border-white p-4 rounded-3xl w-full min-h-[120px]">
-              <h2 className="font-bold mb-1 text-[#eef2ff]">{fuzzyProcess[currentIndex].name}</h2>
-              <p className="text-sm text-[#a1a1aa]">{fuzzyProcess[currentIndex].desc}</p>
+            <div className="border border-white bg-[#E8D7BD] p-4 rounded-3xl w-full min-h-[120px]">
+              <h2 className="font-bold mb-1 text-[#0a0a0a]">{fuzzyProcess[currentIndex].name}</h2>
+              <p className="text-sm text-[#525252]">{fuzzyProcess[currentIndex].desc}</p>
             </div>
 
             {/* Down Arrow */}

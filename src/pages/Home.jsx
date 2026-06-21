@@ -4,6 +4,10 @@ import PixelSnow from '../Components/Background/pixelsnow'
 import CharacterPicker from '../Components/Character'
 import Stepper from '../Components/Stepper'
 import FuzzyProcessPanel from '../Components/Stepper/proccessPanel'
+import useFuzzyLogic from '../hooks/useFuzzyLogic'
+import FuzzificationGraph from '../Components/Graph/fuzzyficationGraph'
+import InputSliders from '../Components/Slider/inputSlider'
+import CharacterPanel from '../Components/Character/characterPanel'
 
 import DarkVillageBg from '../assets/background/ripped_background.png'
 import WereWolfTxt from '../assets/text/werewolftext.png'
@@ -12,7 +16,8 @@ import FourCharacter from '../assets/image/allchar.png'
 import CampFire from '../assets/image/campfirehut.png'
 import FoxCharacter from '../assets/character/fox-villager.png'
 import GirlCharacter from '../assets/character/girl-character.png'
-import WoodenSign from '../assets/image/wooden-sign.png'
+import MouseCharacter from '../assets/character/traveller-mouse.png'
+
 
 const fuzzyProcess = [
     {
@@ -53,7 +58,19 @@ const fuzzyProcess = [
 function Home() {
 
     const [panelActive, setPanelAactive] = useState(0);
-    const [selectedCharacter, setSelectedCharacter] = useState(0)
+    const [selectedCharacter, setSelectedCharacter] = useState(0);
+    const [values, setValues] = useState({
+        suspicion: 60,
+        voteErraticness: 45,
+        previousLies: 30,
+        aggression: 40,
+    });
+
+    const handleChange = (key, val) => {
+        setValues((prev) => ({ ...prev, [key]: val }))
+    }
+
+    const { memberships, finalTrust, directive } = useFuzzyLogic(values)
 
   return (
     <>
@@ -62,16 +79,6 @@ function Home() {
         style={{ backgroundImage: `url(${DarkVillageBg})` }}
         className="relative bg-cover bg-center w-screen min-h-screen flex flex-col items-center justify-center pt-4 py-8 overflow-x-hidden"
       >
-        {/* Radial gradient overlay */}
-        {/* <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              'radial-gradient(circle at center, rgba(0,0,0,0) 0%, rgba(0,0,0,0.3) 35%, rgba(0,0,0,0.75) 70%, rgba(0,0,0,0.92) 100%)',
-          }}
-        /> */}
-
-        {/* Title / Logo */}
         <div className="relative z-10 w-full max-w-[400px] md:max-w-[600px] flex flex-col items-center justify-center">
           <img src={WereWolfTxt} alt="Werewolf Text" className="w-full h-auto object-contain" />
         </div>
@@ -98,7 +105,7 @@ function Home() {
       </div>
 
       {/* INFORMATIVE SECTION - matches reference layout */}
-      <div className="w-screen bg-[#F4F0E4]">
+      <div className="w-screen bg-[#F1EDE1]">
         <div className="max-w-6xl mx-auto px-6 md:px-10 py-16">
           {/* Row 1: Text left, Image right */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center mb-20">
@@ -261,10 +268,34 @@ function Home() {
             </div>
         </div>
       </div>
-      <div className='w-screen bg-[#2C2D0F] '>
+      <div className='w-screen bg-[#541F24] '>
             <div className="max-w-6xl mx-auto px-6 md:px-10 py-16">
-                <h1 className='text-4xl text-white'>Fuzzy Variables</h1>
+                <h1 className='text-4xl text-white text-center mb-16'>Fuzzy Variables</h1>
+                <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-[280px_1fr_320px] gap-6">
+                    {/* LEFT: Sliders */}
+                    <div className="order-1">
+                    <InputSliders values={values} onChange={handleChange} />
+                    </div>
+
+                    {/* MIDDLE: Character + Dialogue + Trust */}
+                    <div className="order-2 flex items-center justify-center">
+                    <CharacterPanel
+                        characterImg={MouseCharacter}
+                        finalTrust={finalTrust}
+                        directive={directive}
+                    />
+                    </div>
+
+                    {/* RIGHT: Graphs (moves to bottom & becomes a grid on smaller screens) */}
+                    <div className="order-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
+                        <FuzzificationGraph label="SUSPICION" value={values.suspicion} membership={memberships.S} />
+                        <FuzzificationGraph label="VOTE ERRATICNESS" value={values.voteErraticness} membership={memberships.V} />
+                        <FuzzificationGraph label="PREVIOUS LIES" value={values.previousLies} membership={memberships.L} />
+                        <FuzzificationGraph label="AGGRESSION BEHAVIOR" value={values.aggression} membership={memberships.B} />
+                    </div>
+                </div>
             </div>
+
       </div>
     </>
   )
