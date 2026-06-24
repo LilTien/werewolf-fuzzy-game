@@ -10,7 +10,7 @@ const SLIDER_CONFIG = [
 function InputSliders({ values, onChange }) {
   return (
     <div className=" rounded-sm p-5 w-full">
-      <h2 className="text-[#22d3ee]  text-sm tracking-widest mb-5 flex items-center gap-2">
+      <h2 className="text-white  text-sm tracking-widest mb-5 flex items-center gap-2">
         FUZZY SANDBOX INPUTS
       </h2>
 
@@ -27,7 +27,7 @@ function InputSliders({ values, onChange }) {
               max={100}
               value={values[key]}
               onChange={(e) => onChange(key, Number(e.target.value))}
-              className="w-full h-2 rounded-full appearance-none cursor-pointer accent-yellow-400 bg-white"
+              className="w-full h-2 appearance-none cursor-pointer accent-[#d4d4d4] bg-[#9ca3af] [&::-webkit-slider-thumb]:rounded-none"
             />
           </div>
         ))}

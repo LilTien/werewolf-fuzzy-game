@@ -8,6 +8,7 @@ import useFuzzyLogic from '../hooks/useFuzzyLogic'
 import FuzzificationGraph from '../Components/Graph/fuzzyficationGraph'
 import InputSliders from '../Components/Slider/inputSlider'
 import CharacterPanel from '../Components/Character/characterPanel'
+import RulesPanel from '../Components/List/ruleList'
 
 import DarkVillageBg from '../assets/background/ripped_background.png'
 import WereWolfTxt from '../assets/text/werewolftext.png'
@@ -70,7 +71,7 @@ function Home() {
         setValues((prev) => ({ ...prev, [key]: val }))
     }
 
-    const { memberships, finalTrust, directive } = useFuzzyLogic(values)
+    const { memberships, finalTrust, directive, allRules, firedRules } = useFuzzyLogic(values)
 
   return (
     <>
@@ -293,6 +294,10 @@ function Home() {
                         <FuzzificationGraph label="PREVIOUS LIES" value={values.previousLies} membership={memberships.L} />
                         <FuzzificationGraph label="AGGRESSION BEHAVIOR" value={values.aggression} membership={memberships.B} />
                     </div>
+                </div>
+                <div>
+                    <h2 className='text-white mb-4'>Rules Apply</h2>
+                    <RulesPanel firedRules={firedRules} allRules={allRules}/>
                 </div>
             </div>
 
