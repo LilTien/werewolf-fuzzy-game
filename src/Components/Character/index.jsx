@@ -27,7 +27,7 @@ function CharacterPicker({ selectedCharacter = 0, onSelectCharacter }) {
       
       {/* Left Column: Grid + Description (Stays at the most left on desktop) */}
       <div className='flex flex-col justify-center items-center md:items-start'>
-        <h1 className='w-full text-left text-2xl md:text-7xl text-[#D3FD8D] text-white mb-8'>{characterList[selectedCharacter].name}</h1>
+        <h1 className='w-full text-left text-2xl md:text-7xl text-[#D3FD8D]  mb-8'>{characterList[selectedCharacter].name}</h1>
         <div className='grid grid-cols-5 max-w-[350px] gap-2 '>
             {characterList.map((character, index) => {
               const isSelected = selectedCharacter === index;

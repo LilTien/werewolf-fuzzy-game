@@ -9,6 +9,8 @@ import FuzzificationGraph from '../Components/Graph/fuzzyficationGraph'
 import InputSliders from '../Components/Slider/inputSlider'
 import CharacterPanel from '../Components/Character/characterPanel'
 import RulesPanel from '../Components/List/ruleList'
+import { fuzzyProcess } from '../constant/fuzzy'
+import { useNavigate } from 'react-router-dom'
 
 import DarkVillageBg from '../assets/background/ripped_background.png'
 import WereWolfTxt from '../assets/text/werewolftext.png'
@@ -20,43 +22,9 @@ import GirlCharacter from '../assets/character/girl-character.png'
 import MouseCharacter from '../assets/character/traveller-mouse.png'
 
 
-const fuzzyProcess = [
-    {
-        name: "Fuzzification",
-        desc: (<span>Convert player statistics into fuzzy membership values.
-                Example:
-
-                Aggression = 70 → 0.7 High, 0.3 Medium
-                Lies = 40 → 0.6 Medium, 0.4 Low</span>)
-    },
-    {
-        name: "Inference (Mamdani)",
-        desc: (<span>Apply fuzzy rules to determine suspicion.
-
-                Example:
-                IF Aggression is High
-                AND Lies is High
-                AND Vote Behavior is Erratic
-                THEN Suspicion is Very High
-                The MIN operator is used to calculate rule strength.</span>)
-    },
-    {
-        name: "Aggregation",
-        desc: (<span>Combine all activated rule outputs into a single fuzzy suspicion set using the MAX operator.
-                    Multiple rules may contribute simultaneously.</span>)
-    },
-    {
-        name: "Defuzzification",
-        desc: (<span>Calculate the Centroid (Center of Gravity) of the aggregated output to produce a final Suspicion Score.
-                Example:
-                Suspicion = 78/100
-                → NPC is highly likely to vote against that player</span>)
-    },
-]
-
-
-
 function Home() {
+
+    const navigate = useNavigate();
 
     const [panelActive, setPanelAactive] = useState(0);
     const [selectedCharacter, setSelectedCharacter] = useState(0);
@@ -92,10 +60,11 @@ function Home() {
 
         {/* Play Button */}
         <div className="relative z-10 w-[320px] h-[160px] sm:w-[400px] sm:h-[200px] md:w-[500px] md:h-[250px] top-[-45px] group cursor-pointer mt-4">
-          <button className="w-full h-full relative focus:outline-none">
+          <button className="w-full h-full relative focus:outline-none" onClick={() => navigate('/game')}>
             <img
               src={PlayBttn}
               alt="Play Button"
+              onClick={() => {}}
               className="absolute inset-0 w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
             />
             <span className="absolute inset-0 z-10 flex items-center justify-center text-stone-900 text-lg sm:text-lg md:text-xl font-bold transition-colors duration-300 group-hover:text-red-600 select-none">
