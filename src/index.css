@@ -1,3 +1,6 @@
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/geist";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -29,4 +32,11 @@ body{
     transform: scaleX(0.8);
     opacity: 0.15;
   }
+}
+.float-animation {
+  animation: float 3s ease-in-out infinite;
+}
+
+.shadow-float-animation {
+  animation: shadowFloat 3s ease-in-out infinite;
 }

@@ -10,7 +10,8 @@ const GameModeModal = ({
     onClose,
     data,
     handleOnChangeData,
-    type = "single-player"
+    type = "single-player",
+    handleOnStart
 }) => {
 
     const [activeTab, setActiveTab] = useState(TAB.CREATE)
@@ -79,7 +80,9 @@ const GameModeModal = ({
                 ) }
                 
                 <div className='flex gap-4 mt-8'>
-                    <Button className='w-full bg-[#a3e635] hover:bg-[#1a2e05] hover:text-white border-[#ecfccb]'>{type === "single-player" ? "Start Game" : `${activeTab} Room`}</Button>
+                    <Button 
+                        onClick={handleOnStart}
+                        className='w-full bg-[#a3e635] hover:bg-[#1a2e05] hover:text-white border-[#ecfccb]'>{type === "single-player" ? "Start Game" : `${activeTab} Room`}</Button>
                 </div>
             
         </Modal>

@@ -2,20 +2,24 @@ import React, {useState} from "react";
 import DayBackground from '../../assets/background/morning.png'
 import { Input, NumberInput } from "../Input";
 import GameModeModal from "../Modal/joinRoomModal";
+import LobbyRoom from "../Lobby";
+import useStore from "@/Store/useStore";
 
 
-const StartGame = () => {
+const StartGame = ({
+    onStart,
+    data,
+    setData,
+    gameType,
+    setGameType,
+}) => {
 
     const [isModalOpen , setIsModalOpen] = useState(false);
-    const [data , setData] = useState({
-        playerName: "",
-        roomName: "",
-        maxPlayer: 2,
-        roomCode : ""
-    })
-    const [gameState, setGameState] = useState({
-        type: "single-player"
-    })
+    const [isInLobby, setIsInLobby] = useState(false);
+
+    //global state
+    const initializeGame = useStore((state) => state.initializeGame);
+    const currentState = useStore((state) => state.game);
 
     const handleOnChangeRoom = (e) => {
         const {name, value} = e.target
@@ -31,29 +35,40 @@ const StartGame = () => {
             playerName: "",
             roomName: "",
             maxPlayer: 2,
-            roomCode : ""
+            roomCode : "",
+            mode: ""
         })
         
     }
 
     const handleOpenModal = (type) => {
         setIsModalOpen(true);
-        setGameState((prev) => ({
+        setData(prev => ({
             ...prev,
-            type : type
+            mode: type
         }))
         
     }
 
+
     return (
         <>
+            {
+                isInLobby && (
+                    <LobbyRoom
+                        onCancel={() => setIsInLobby(false)}
+                    />
+                )
+            }
+            
 
             <GameModeModal 
                 isOpen={isModalOpen}
                 onClose={() => handleOnCloseModal()}
                 data={data}
                 handleOnChangeData={handleOnChangeRoom}
-                type={gameState.type}/>
+                handleOnStart={onStart}
+                type={data.mode}/>
             <div 
                 style={{backgroundImage: `url(${DayBackground})`}}
                 className="flex flex-col gap-4 w-screen  h-screen bg-[#134e4a] justify-center items-center">
