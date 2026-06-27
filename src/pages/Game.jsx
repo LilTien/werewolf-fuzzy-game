@@ -42,7 +42,7 @@ function Game() {
     <CardRevealAnimation
       cards={roles}
       assignedCardId={'werewolf'}
-      isOpen={true}
+      isOpen={currentState.phase === "Discussion"}
       onClose={() =>{}}
       autoCloseDuration={10}
     />

@@ -81,7 +81,7 @@ export default function CardRevealAnimation({
     const flipfx = useMemo(() =>
         new Howl({
             src: [FlipCardSd],
-            volume: 0.2,
+            volume: 0.4,
         }),
     [])
     const sparklefx = useMemo(() =>
