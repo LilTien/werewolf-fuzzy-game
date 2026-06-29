@@ -2,8 +2,7 @@ import React, {useState} from 'react'
 import StartGame from '../Components/StartGame'
 import useStore from '@/Store/useStore'
 import Discussion from '@/Components/Discussion'
-import CardRevealAnimation from '@/Components/Animation/CardReveal'
-import roles from '@/constant/roles'
+import CutScene from '@/Components/CutScene'
 
 function Game() {
 
@@ -15,7 +14,8 @@ function Game() {
      roomCode : "",
      mode: ""
   })
-  const [gameType, setGameType] = useState('single-player')
+  const [gameType, setGameType] = useState('single-player');
+  const [showCutScene, setShowCutScene] = useState(false);
 
 
   //global state
@@ -39,13 +39,13 @@ function Game() {
   }
   return (
     <>
-    <CardRevealAnimation
-      cards={roles}
-      assignedCardId={'werewolf'}
-      isOpen={currentState.phase === "Discussion"}
-      onClose={() =>{}}
-      autoCloseDuration={10}
-    />
+      {showCutScene && (
+          <CutScene
+              type="discussion"
+              day={1}
+              onFinish={() => setShowCutScene(false)}
+          />
+      )}
       {
         currentState.phase === "Start" ? 
         (<StartGame
@@ -58,7 +58,8 @@ function Game() {
         :
         currentState.phase === "Discussion" ? 
         (
-          <Discussion/>
+          <Discussion
+            data={currentState}/>
         )
         :
         (<></>)

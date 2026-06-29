@@ -20,10 +20,15 @@ export default function Button({
       "bg-white/10 hover:bg-white/20 text-white border-white/20 backdrop-blur-sm",
   };
 
+  // Updated RegEx: Now matches standard sizes AND arbitrary bracket values (e.g., text-[11px])
+  // It also ensures it doesn't accidentally match hover:text-xl by checking for spaces/string start
+  const hasTextSizeOverride = /(?:^|\s)text-(?:xs|sm|base|lg|xl|[2-9]xl|\[.*?\])(?:\s|$)/.test(className);
+
+  // Apply default text size ONLY if an override wasn't passed in
   const sizes = {
-    sm: "px-3 py-2 text-sm",
-    md: "px-5 py-3 text-base",
-    lg: "px-7 py-4 text-lg",
+    sm: `px-3 py-2 ${hasTextSizeOverride ? "" : "text-sm"}`,
+    md: `px-5 py-3 ${hasTextSizeOverride ? "" : "text-base"}`,
+    lg: `px-7 py-4 ${hasTextSizeOverride ? "" : "text-lg"}`,
   };
 
   return (
@@ -64,5 +69,4 @@ export default function Button({
       {icon}
       <span>{children}</span>
     </button>
-  );
-}
+  )}

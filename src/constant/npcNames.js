@@ -6,7 +6,7 @@ const npcNames = [
     "AfiqKelantan",
     "AfiqPenang",
     "Koppa",
-    "PidutManjung",
+    "Intan",
     "Fariz"
 ];
 
