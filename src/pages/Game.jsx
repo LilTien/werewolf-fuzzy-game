@@ -39,13 +39,7 @@ function Game() {
   }
   return (
     <>
-      {showCutScene && (
-          <CutScene
-              type="discussion"
-              day={1}
-              onFinish={() => setShowCutScene(false)}
-          />
-      )}
+      
       {
         currentState.phase === "Start" ? 
         (<StartGame
