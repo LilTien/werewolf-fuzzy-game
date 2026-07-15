@@ -2,14 +2,14 @@ import npcNames from "@/constant/npcNames";
 import roles from "@/constant/roles";
 
 const avatarPositions = [
-  { top: "46%", left: "50%" },
-  { top: "45%", left: "65%" },
-  { top: "50%", left: "66%" },
-  { top: "55%", left: "62%" },
-  { top: "52%", left: "50%" },
-  { top: "55%", left: "55%" },
-  { top: "43%", left: "54%" },
-  { top: "43%", left: "61%" },
+  { top: "35%", left: "40%" },
+  { top: "45%", left: "40%" },
+  { top: "52%", left: "38%" },
+  { top: "58%", left: "43%" },
+  { top: "60%", left: "50%" },
+  { top: "57%", left: "58%" },
+  { top: "50%", left: "60%" },
+  { top: "43%", left: "57%" },
 ];
 
 export function generatePlayers(playerName, totalPlayer = 8) {
@@ -35,7 +35,8 @@ export function generatePlayers(playerName, totalPlayer = 8) {
         role: getAndRemoveRandomRole(),
         isHuman: true,
         alive: true ,
-        position: { top: "46%", left: "50%" }
+        hasSpoken: false,
+        position: { top: "40%", left: "49%" }
     });
 
     // 4. Assign roles to NPCs
@@ -46,6 +47,7 @@ export function generatePlayers(playerName, totalPlayer = 8) {
             role: getAndRemoveRandomRole(),
             isHuman: false,
             alive: true,
+            hasSpoken: false,
             position: avatarPositions[i]
         });
     }

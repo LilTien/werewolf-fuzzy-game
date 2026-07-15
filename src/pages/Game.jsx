@@ -2,7 +2,7 @@ import React, {useState} from 'react'
 import StartGame from '../Components/StartGame'
 import useStore from '@/Store/useStore'
 import Discussion from '@/Components/Discussion'
-import CutScene from '@/Components/CutScene'
+import Vote from '@/Components/Vote'
 
 function Game() {
 
@@ -15,12 +15,11 @@ function Game() {
      mode: ""
   })
   const [gameType, setGameType] = useState('single-player');
-  const [showCutScene, setShowCutScene] = useState(false);
-
 
   //global state
   const initializeGame = useStore((state) => state.initializeGame);
   const currentState = useStore((state) => state.game);
+  const setPhase = useStore((state) => state.setPhase)
   
 
 
@@ -28,6 +27,11 @@ function Game() {
   const handleOnstart = () => {
       initializeGame(data.playerName, data.mode);
       console.log(currentState)
+  }
+
+  const handlePhase = (phase) => {
+    console.log('phase: ', phase)
+    setPhase(phase)
   }
 
   const handleOnChangeData = (e) => {
@@ -53,10 +57,12 @@ function Game() {
         currentState.phase === "Discussion" ? 
         (
           <Discussion
-            data={currentState}/>
+            data={currentState}
+            onNextSession={handlePhase}/>
         )
         :
-        (<></>)
+        (<Vote
+          data={currentState}/>)
       }
       
     </>

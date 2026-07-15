@@ -1,8 +1,5 @@
 import React, { useState, useEffect } from "react";
 import useStore from "@/Store/useStore";
-import DayBackground from '../../assets/background/discussion.png'
-import AvatarIcon from '../../assets/avatar/avatar.png'
-import NewDayBackground from '../../assets/background/newdiscussion.png'
 import SquareDayBackground from '../../assets/background/squarediscussion.png'
 import ForestBackground from '../../assets/background/dark-forest.png'
 import roles from "@/constant/roles";
@@ -16,9 +13,12 @@ const Discussion = ({
     data,
     onNextSession
 }) => {
-    const [isCardAnimationOpen, setIsCardAnimationOpen] = useState(true);
+    const [isCardAnimationOpen, setIsCardAnimationOpen] = useState(true);//set to true
     const [selectedPlayer, setSelectedPlayer] = useState('');
-    const [showCutScene, setShowCutScene] = useState(false)
+    const [showCutScene, setShowCutScene] = useState(false);
+
+    const updateRelation = useStore((state) => state.updateRelation);
+    const updateSpoken = useStore((state) => state.updateSpoken)
     const gameState = useStore((state) => state.game);
 
     const players = data.players;
@@ -31,6 +31,82 @@ const Discussion = ({
     const handleAvatarOnClick = (data) => {
         setSelectedPlayer(data)
     } 
+
+    const handlePlayerAction = (action) => {
+        const { type, target, message } = action;
+        const senderId = message.senderId;
+
+        const sender = players.find(p => p.id === senderId);
+
+        if(!sender) return;
+
+        if(sender.hasSpoken){
+            console.log("player has spoken")
+            return
+        }
+
+        updateSpoken(
+            senderId,
+            true
+        )
+
+        if (type === "accuse") {
+            for (const observer of players) {
+                // Skip the player who made the accusation
+                if (observer.id === senderId) continue;
+    
+                const relation = target.relations[sender.id];
+                
+                if (observer.id === target.id) {
+                    updateRelation(
+                        target.id,
+                        sender.id,
+                        {
+                            suspicion: relation.suspicion + 20,
+                        }
+                    );
+                };
+                // Safety check (shouldn't happen, but prevents crashes)
+                if (!relation) continue;
+    
+                updateRelation(
+                    observer.id,
+                    target.id,
+                    {
+                        suspicion: relation.suspicion + 10,
+                    }
+                );
+            }
+        }else if (type === "defend"){
+            for (const observer of players) {
+                // Skip the player who made the defend
+                if (observer.id === senderId) continue;
+    
+                const relation = target.relations[sender.id];
+                
+                if (observer.id === target.id) {
+                    updateRelation(
+                        target.id,
+                        sender.id,
+                        {
+                            suspicion: Math.max(relation.suspicion - 15, 0) ,
+                        }
+                    );
+                };
+                // Safety check (shouldn't happen, but prevents crashes)
+                if (!relation) continue;
+    
+                updateRelation(
+                    observer.id,
+                    target.id,
+                    {
+                        suspicion: Math.max(relation.suspicion - 10, 0),
+                    }
+                );
+            }
+        }
+
+    };
 
 
 
@@ -74,15 +150,15 @@ const Discussion = ({
                         )
                     })}
                         
-                
-                
-
                 </div>
                 {/* chat and rule panel */}
                 <ChatPanel
                     selectedPlayer={selectedPlayer}
                     myName={data.players[0].name}
-                    myRole={data.players[0].role}/>
+                    myRole={data.players[0].role}
+                    myId={data.players[0].id}
+                    onAction={handlePlayerAction}
+                    onEndDiscussion={onNextSession}/>
 
             </div>
         </>

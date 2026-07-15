@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import Button from '../Button'
 import roles from '@/constant/roles'
+import { PHASE } from '@/constant/phase'
 
 
 
@@ -50,7 +51,7 @@ const MSG_STYLES = {
 
 // ── message builder ───────────────────────────────────────────────────────────
 
-function buildMessage(type, subOption, targetName, myName, myRole, msgId) {
+function buildMessage(type, subOption, targetName, myName,myId,  myRole, msgId) {
   let text = ''
   let isLie = false
 
@@ -67,7 +68,7 @@ function buildMessage(type, subOption, targetName, myName, myRole, msgId) {
       : `I am the ${subOption.toUpperCase()}. You can trust me.`
   }
 
-  return { id: msgId, sender: myName, text, type, isLie, timestamp: Date.now() }
+  return { id: msgId,senderId: myId, sender: myName, text, type, isLie, timestamp: Date.now() }
 }
 
 // ── sub option pill ───────────────────────────────────────────────────────────
@@ -120,9 +121,11 @@ function MessageRow({ msg }) {
 export default function ChatPanel({
   selectedPlayer = null,
   myName         = 'You',
+  myId = 0,
   myRole         = 'villager',
   npcMessages    = [],
   onAction,
+  onEndDiscussion
 }) {
   const [activeMenu,  setActiveMenu]  = useState(null)
   const [messages,    setMessages]    = useState([])
@@ -158,7 +161,7 @@ export default function ChatPanel({
     if (!selectedPlayer) return
     const id      = msgCounter + 1
     setMsgCounter(id)
-    const message = buildMessage(menuKey, optionValue, selectedPlayer.name, myName, myRole, id)
+    const message = buildMessage(menuKey, optionValue, selectedPlayer.name, myName,myId,  myRole, id)
     setMessages((prev) => [...prev, message])
     onAction?.({ type: menuKey, target: selectedPlayer, subOption: optionValue, message })
     setActiveMenu(null)
@@ -186,6 +189,7 @@ export default function ChatPanel({
           </span>
         </div>
         <Button
+            onClick={() => onEndDiscussion(PHASE.VOTE)}
             className="mt-4 ml-4 w-[150px] text-black text-[10px] bg-[#e11d48] border-none rounded-md" size='sm'>End Discussion</Button>
 
         {/* ── chat history ── */}
