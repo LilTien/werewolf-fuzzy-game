@@ -4,15 +4,18 @@ import VoteBg from '../../assets/background/vote.png'
 import Avatar from "../Avatar";
 import VoteModal from "./voteModal";
 import useStore from "@/Store/useStore";
+import MajorityModal from "./majorityModal";
+import { npcVote } from "@/logic/npcVoting";
+import { delay, randomDelay } from "@/utils/async";
 
 const Vote = ({
     data,
-    playerId
+    playerId,
+    onNextPhase
 }) => {
     const players = data.players;
     const everyOneVoted = players.every(player => player.hasVoted);
-    const randomDelay = () => Math.floor(Math.random() * 1000) + 500;
-    const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
     const votes = useMemo(() => {
         return players.reduce((acc, player) => {
 
@@ -29,7 +32,23 @@ const Vote = ({
 
     }, [players]);
 
-    console.log('vote counts: ', votes)
+    const eliminatedPlayer = useMemo(() => {
+        if (Object.keys(votes).length === 0) return null;
+
+        const highestVotePlayerId = Object.entries(votes).reduce(
+            (winner, current) => {
+                const [winnerId, winnerVotes] = winner;
+                const [currentId, currentVotes] = current;
+
+                return currentVotes > winnerVotes ? current : winner;
+            }
+        )[0];
+
+        return players.find(
+            player => player.id === Number(highestVotePlayerId)
+        );
+
+    }, [votes, players]);
 
     const [showCutScene, setShowCutScene] = useState(true);
     const [showVoteModal, setShowVoteModal] = useState(false);
@@ -41,11 +60,12 @@ const Vote = ({
     const handleCutSceneFinish = () => {
         setShowCutScene(false);
 
-        setTimeout(() => {
+        setTimeout(async () => {
 
             setShowVoteModal(true);
+            await npcVoting(players);
 
-        }, 2000);
+        }, 500);
     };
 
     const handleVotePlayer = async (targetId) => {
@@ -53,27 +73,8 @@ const Vote = ({
             players[0].id,
             targetId
         );
-        await npcVoting();
+        
     }
-
-    const npcVote = (npc) => {
-
-        let highest = -1;
-        let targetId = null;
-
-        for (const relation of Object.values(npc.relations)) {
-
-            // Don't vote for yourself
-            if (relation.playerId === npc.id) continue;
-
-            if (relation.suspicion > highest) {
-                highest = relation.suspicion;
-                targetId = relation.playerId;
-            }
-        }
-
-        return targetId;
-    };
 
     const npcVoting = async () => {
 
@@ -94,6 +95,13 @@ const Vote = ({
 
     };
 
+    const handleCloseMajorityModalClose = async () => {
+        setShowMajorityModal(false);
+        await delay(1000);
+        onNextPhase('Night');
+    }
+
+
     useEffect(() => {
         if(everyOneVoted){
             setShowVoteModal(false);
@@ -101,6 +109,7 @@ const Vote = ({
         }
 
     },[players])
+
 
     return (
         <>
@@ -119,6 +128,12 @@ const Vote = ({
                 myVote={players[0].votedFor}
                 onVote={handleVotePlayer}
                 />
+            <MajorityModal
+                isOpen={showMajorityModal}
+                eliminatedPlayer={eliminatedPlayer}
+                players={players}
+                onContinue={handleCloseMajorityModalClose}
+            />
             <div 
                 className="flex w-screen h-screen bg-[#010306] justify-center items-center overflow-hidden bg-cover">
                 

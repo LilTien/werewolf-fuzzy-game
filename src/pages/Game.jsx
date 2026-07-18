@@ -3,6 +3,7 @@ import StartGame from '../Components/StartGame'
 import useStore from '@/Store/useStore'
 import Discussion from '@/Components/Discussion'
 import Vote from '@/Components/Vote'
+import Night from '@/Components/Night'
 
 function Game() {
 
@@ -61,7 +62,14 @@ function Game() {
             onNextSession={handlePhase}/>
         )
         :
+        currentState.phase === "Vote" ? 
+
         (<Vote
+          data={currentState}
+          onNextPhase={handlePhase}/>)
+
+        : 
+        (<Night
           data={currentState}/>)
       }
       

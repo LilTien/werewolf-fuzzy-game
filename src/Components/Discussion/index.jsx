@@ -123,7 +123,7 @@ const Discussion = ({
             )}
             <CardRevealAnimation
                 cards={roles}
-                assignedCardId={'werewolf'}
+                assignedCardId={players[0].role}
                 isOpen={isCardAnimationOpen}
                 onClose={handleCloseCardAnimation}
                 autoCloseDuration={10}
