@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import useStore from "@/Store/useStore";
 import SquareDayBackground from '../../assets/background/squarediscussion.png'
 import ForestBackground from '../../assets/background/dark-forest.png'
+import SunPixelIcon from '../../assets/icon/sun.png'
 import roles from "@/constant/roles";
 import CardRevealAnimation from "../Animation/CardReveal";
 import Avatar from "../Avatar";
@@ -13,9 +14,11 @@ const Discussion = ({
     data,
     onNextSession
 }) => {
-    const [isCardAnimationOpen, setIsCardAnimationOpen] = useState(true);//set to true
+
+    const day = data.day;
+    const [isCardAnimationOpen, setIsCardAnimationOpen] = useState(day < 2);//set to true
     const [selectedPlayer, setSelectedPlayer] = useState('');
-    const [showCutScene, setShowCutScene] = useState(false);
+    const [showCutScene, setShowCutScene] = useState(day > 1);
 
     const updateRelation = useStore((state) => state.updateRelation);
     const updateSpoken = useStore((state) => state.updateSpoken)
@@ -119,6 +122,7 @@ const Discussion = ({
                     type={gameState.phase}
                     day={gameState.day}
                     onFinish={() => setShowCutScene(false)}
+                    icon={SunPixelIcon}
                 />
             )}
             <CardRevealAnimation
@@ -143,6 +147,7 @@ const Discussion = ({
                         <Avatar
                             onClick={handleAvatarOnClick}
                             relation = {relations}
+                            isAlive = {player.alive}
                             key={player.id}
                             data={player}
                             top={player.position.top}

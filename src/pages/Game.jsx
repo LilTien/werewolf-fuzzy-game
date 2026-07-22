@@ -4,6 +4,7 @@ import useStore from '@/Store/useStore'
 import Discussion from '@/Components/Discussion'
 import Vote from '@/Components/Vote'
 import Night from '@/Components/Night'
+import GameOver from '@/Components/GameOver'
 
 function Game() {
 
@@ -20,7 +21,9 @@ function Game() {
   //global state
   const initializeGame = useStore((state) => state.initializeGame);
   const currentState = useStore((state) => state.game);
-  const setPhase = useStore((state) => state.setPhase)
+  const setPhase = useStore((state) => state.setPhase);
+  const nextDay = useStore((state) => state.nextDay);
+  const resetGame = useStore((state) => state.resetGame);
   
 
 
@@ -33,6 +36,11 @@ function Game() {
   const handlePhase = (phase) => {
     console.log('phase: ', phase)
     setPhase(phase)
+  }
+
+  const handleNextDay = () => {
+    setPhase('Discussion')
+    nextDay();
   }
 
   const handleOnChangeData = (e) => {
@@ -69,8 +77,22 @@ function Game() {
           onNextPhase={handlePhase}/>)
 
         : 
+        currentState.phase === "Night" ? 
         (<Night
-          data={currentState}/>)
+          data={currentState}
+          onNextDay={handleNextDay}/>)
+        :
+        currentState.phase === "GameOver" ? 
+        (
+          <GameOver
+              data={currentState}
+              onBackToStart={resetGame}
+          />
+        )
+        :
+        (<>
+        Hello world
+        </>)
       }
       
     </>

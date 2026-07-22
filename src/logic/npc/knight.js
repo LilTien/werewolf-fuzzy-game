@@ -2,7 +2,7 @@ import { getMostSuspicious } from "@/utils/trust";
 
 export function knightAI(npc, players) {
 
-    if (npc.killRemaining <= 0)
+    if (!npc.ability.canUse)
         return null;
 
     // Example: 35% chance to use the skill tonight

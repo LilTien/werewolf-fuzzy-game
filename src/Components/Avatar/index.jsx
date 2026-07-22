@@ -1,12 +1,14 @@
 
 import React from "react";
 import AvatarIcon from '../../assets/avatar/avatar.png'
+import GraveIcon from '../../assets/avatar/grave.png'
 import FuzzyPanel from "../Stats/fuzzystats";
 
 const Avatar = ({
     data,
     relation,
     clasName,
+    isAlive = true,
     top,
     left,
     showFuzzyPanel = false,
@@ -19,7 +21,7 @@ const Avatar = ({
         >
             <img
                 className="w-full"
-                src={AvatarIcon}
+                src={data.alive ? AvatarIcon : GraveIcon}
                 alt="Player"
                 onClick={() => onClick(data)}
             />

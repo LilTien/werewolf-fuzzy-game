@@ -30,7 +30,7 @@ const MajorityModal = ({
 
                 <div className="flex flex-col items-center mt-6">
                     <img src={AvatarIcon} className="w-40 h-40 object-contain" />
-                    <h2 className="text-red-400 text-2xl mt-4">{eliminatedPlayer.name}</h2>
+                    <h2 className="text-red-400 text-2xl mt-4">{eliminatedPlayer.name} [{eliminatedPlayer.role}]</h2>
                     <p className="text-gray-300 mt-2">Received the majority vote.</p>
                     <p className="text-white text-lg font-bold mt-1">
                         Total Votes : {totalVotes}

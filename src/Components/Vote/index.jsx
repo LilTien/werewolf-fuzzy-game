@@ -1,12 +1,15 @@
 import React, {useState, useEffect, useMemo} from "react";
 import CutScene from "../CutScene";
 import VoteBg from '../../assets/background/vote.png'
+import VotePixelIcon from '../../assets/icon/vote.png'
 import Avatar from "../Avatar";
 import VoteModal from "./voteModal";
 import useStore from "@/Store/useStore";
 import MajorityModal from "./majorityModal";
+import NightResultModal from "../Night/nightResultModal";
 import { npcVote } from "@/logic/npcVoting";
 import { delay, randomDelay } from "@/utils/async";
+import { checkWinner } from "@/logic/checkWinner";
 
 const Vote = ({
     data,
@@ -14,7 +17,10 @@ const Vote = ({
     onNextPhase
 }) => {
     const players = data.players;
-    const everyOneVoted = players.every(player => player.hasVoted);
+    const alivePlayers = players.filter(player => player.alive)
+    const everyOneVoted = alivePlayers.every(player => player.hasVoted);
+
+    
 
     const votes = useMemo(() => {
         return players.reduce((acc, player) => {
@@ -50,22 +56,27 @@ const Vote = ({
 
     }, [votes, players]);
 
+    const voteResult = {
+        type: "vote-eliminate",
+        targetId: eliminatedPlayer?.id || null
+    };
+
     const [showCutScene, setShowCutScene] = useState(true);
     const [showVoteModal, setShowVoteModal] = useState(false);
     const [showMajorityModal, setShowMajorityModal] = useState(false);
+    const [showEventModal, setShowEventModal] = useState(false);
+    const [voteEvent, setVoteEvent] = useState();
 
 
-    const votePlayer = useStore((state) => state.votePlayer)
+    const votePlayer = useStore((state) => state.votePlayer);
+    const clearVote = useStore((state) => state.clearVote);
+    const killPlayer = useStore((state) => state.killPlayer);
+    const setWinner = useStore((state) => state.setWinner)
 
-    const handleCutSceneFinish = () => {
+    const handleCutSceneFinish = async () => {
         setShowCutScene(false);
-
-        setTimeout(async () => {
-
-            setShowVoteModal(true);
-            await npcVoting(players);
-
-        }, 500);
+        setShowVoteModal(true);
+        await npcVoting();
     };
 
     const handleVotePlayer = async (targetId) => {
@@ -78,11 +89,12 @@ const Vote = ({
 
     const npcVoting = async () => {
 
-        for (const npc of players) {
+        for (const npc of alivePlayers) {
 
             if (npc.isHuman) continue;
+            if(!npc.alive) continue;
 
-            const targetId = npcVote(npc);
+            const targetId = npcVote(npc, players);
 
             await delay(randomDelay());
 
@@ -96,8 +108,14 @@ const Vote = ({
     };
 
     const handleCloseMajorityModalClose = async () => {
+        if (eliminatedPlayer) {
+            killPlayer(eliminatedPlayer.id);
+        }
+        
         setShowMajorityModal(false);
-        await delay(1000);
+        clearVote();
+        
+
         onNextPhase('Night');
     }
 
@@ -105,7 +123,22 @@ const Vote = ({
     useEffect(() => {
         if(everyOneVoted){
             setShowVoteModal(false);
+            const updatedPlayers = players.map(player =>
+                player.id === eliminatedPlayer.id
+                    ? { ...player, alive: false }
+                    : player
+            );
+
+            const winner = checkWinner(updatedPlayers);
+
+            if (winner.gameOver) {
+                setShowEventModal(true)
+                setWinner(winner);
+                onNextPhase("GameOver");
+                return;
+            }
             setShowMajorityModal(true);
+
         }
 
     },[players])
@@ -119,11 +152,17 @@ const Vote = ({
                     type={data.phase}
                     day={data.day}
                     onFinish={handleCutSceneFinish}
+                    icon={VotePixelIcon}
                 />
             }
+            <NightResultModal
+                event={voteResult}
+                players={players}
+                onContinue={() =>{}}
+            />
             <VoteModal
                 isOpen={showVoteModal}
-                players={players}
+                players={alivePlayers}
                 votes={votes}
                 myVote={players[0].votedFor}
                 onVote={handleVotePlayer}

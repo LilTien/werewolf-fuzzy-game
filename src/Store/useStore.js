@@ -1,13 +1,12 @@
 import { create } from 'zustand'
 import { generatePlayers } from '@/utils/generatePlayers';
 
-const useStore = create((set) => ({
-  // 1. Initial State
-  game: {
+const createInitialGameState = () => ({
       phase: "Start",
       day: 1,
       players: [],
       discussionMessage: [],
+      playerName: "",
       voteResult: null,
       gameLog: [],
       winner: null,
@@ -26,11 +25,20 @@ const useStore = create((set) => ({
             shaman: [],
         }
       }
-  },
+  });
+
+const useStore = create((set) => ({
+  // 1. Initial State
+  game: createInitialGameState(),
+
+  resetGame : () => set({
+    game: createInitialGameState()
+  }),
 
   initializeGame: (playerName, mode) => set({
         game: {
             phase: "Discussion",
+            playerName: "",
             day: 1,
             players: generatePlayers(playerName, 8),
             discussionMessage: [],
@@ -103,8 +111,41 @@ const useStore = create((set) => ({
         phase,
     }
   })),
-  setPlayer: (players) => set({players}),
-  nextDay: () => set((state) => ({day: state.day +1})),
+  setPlayer: (players) => set((state) => ({
+        game: {
+            ...state.game,
+            players: players
+        }
+    })),
+  setWinner: (winner) => set((state) => ({
+    game: {
+        ...state.game, 
+        winner: winner
+    }
+  })),
+  killPlayer: (playerId) =>
+    set((state) => ({
+        game: {
+            ...state.game,
+            players: state.game.players.map(player => {
+
+                if (player.id !== playerId)
+                    return player;
+
+                return {
+                    ...player,
+                    alive: false
+                };
+
+            })
+        }
+    })),
+  nextDay: () => set((state) => ({
+        game: {
+            ...state.game,
+            day: state.game.day +1
+        }
+    })),
   votePlayer: (voterId, targetId) =>
       set((state) => ({
           game: {
@@ -124,6 +165,19 @@ const useStore = create((set) => ({
           },
       })),
 
+      clearVote: () => set((state) => ({
+            game: {
+                ...state.game,
+                players: state.game.players.map((player) => ({
+                    ...player,
+                    votedFor: null,
+                    hasVoted: false,
+                })),
+
+                voteResult: null
+            }
+        })),
+
     addKnowledge : (role, target, targetRole) => set((state) => ({
         game: {
             ...state.game,
@@ -140,23 +194,6 @@ const useStore = create((set) => ({
 
         }
     })) ,
-
-    resetAction : () => set((state) => ({
-        game: {
-            ...state.game,
-            night: {
-                ...state.game.night,
-                action: {
-                    werewolf: null,
-                    doctor: null,
-                    seer: null,
-                    shaman: null,
-                    knight: null
-                }
-            }
-        }
-    })),
-
     nightAction: (role, targetId) =>
     set((state) => ({
         game: {
@@ -171,6 +208,34 @@ const useStore = create((set) => ({
             },
         },
     })),
+
+    setNightResult : (result) => set((state) => ({
+        game: {
+            ...state.game,
+            night: {
+                ...state.game.night,
+                results: result
+            }
+        }
+    })),
+
+    clearNightResult: () => set((state) => ({
+        game: {
+            ...state.game,
+            night: {
+                ...state.game.night,
+                results: [],
+                action: {
+                    werewolf: null,
+                    doctor: null,
+                    seer: null,
+                    shaman: null,
+                    knight: null
+                },
+
+            }
+        }
+    }))
 
 }));
 
