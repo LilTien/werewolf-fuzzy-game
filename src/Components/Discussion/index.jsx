@@ -32,7 +32,9 @@ const Discussion = ({
     }
 
     const handleAvatarOnClick = (data) => {
-        setSelectedPlayer(data)
+        if(data.id !== 0 || !data.alive){
+            setSelectedPlayer(data);
+        }
     } 
 
     const handlePlayerAction = (action) => {

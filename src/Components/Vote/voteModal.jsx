@@ -7,6 +7,7 @@ const VoteModal = ({
     votes,
     myVote,
     onVote,
+    disabled
 }) => {
 
     const [selectedPlayer, setSelectedPlayer] = useState(myVote);
@@ -42,7 +43,7 @@ const VoteModal = ({
                 <div className="flex justify-end mt-10">
 
                     <button
-                        disabled={selectedPlayer == null}
+                        disabled={selectedPlayer == null || disabled}
                         onClick={() => onVote(selectedPlayer)}
                         className="px-8 py-3 rounded-lg
                         bg-red-600

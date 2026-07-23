@@ -33,13 +33,13 @@ const MENUS = {
       { value: 'seer',     label: 'SEER'      },
     ],
   },
-  tell_role: {
-    label: 'REVEAL',
-    color: 'text-violet-400',
-    border: 'border-violet-500/50',
-    activeBg: 'bg-violet-500/15',
-    options: [], // built dynamically from ALL_ROLES
-  },
+  // tell_role: {
+  //   label: 'REVEAL',
+  //   color: 'text-violet-400',
+  //   border: 'border-violet-500/50',
+  //   activeBg: 'bg-violet-500/15',
+  //   options: [], // built dynamically from ALL_ROLES
+  // },
 }
 
 const MSG_STYLES = {

@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useMemo} from "react";
+import React, {useState, useEffect, useMemo, useRef} from "react";
 import CutScene from "../CutScene";
 import VoteBg from '../../assets/background/vote.png'
 import VotePixelIcon from '../../assets/icon/vote.png'
@@ -20,10 +20,10 @@ const Vote = ({
     const alivePlayers = players.filter(player => player.alive)
     const everyOneVoted = alivePlayers.every(player => player.hasVoted);
 
-    
+    //use ref
 
     const votes = useMemo(() => {
-        return players.reduce((acc, player) => {
+        return alivePlayers.reduce((acc, player) => {
 
             if (player.votedFor !== null) {
 
@@ -64,6 +64,7 @@ const Vote = ({
     const [showCutScene, setShowCutScene] = useState(true);
     const [showVoteModal, setShowVoteModal] = useState(false);
     const [showMajorityModal, setShowMajorityModal] = useState(false);
+    const [hasVoted, setHasVoted] = useState(false);
     const [showEventModal, setShowEventModal] = useState(false);
     const [voteEvent, setVoteEvent] = useState();
 
@@ -80,6 +81,7 @@ const Vote = ({
     };
 
     const handleVotePlayer = async (targetId) => {
+        setHasVoted(true)
         votePlayer(
             players[0].id,
             targetId
@@ -102,7 +104,6 @@ const Vote = ({
                 npc.id,
                 targetId
             );
-
         }
 
     };
@@ -111,6 +112,7 @@ const Vote = ({
         if (eliminatedPlayer) {
             killPlayer(eliminatedPlayer.id);
         }
+
         
         setShowMajorityModal(false);
         clearVote();
@@ -166,6 +168,7 @@ const Vote = ({
                 votes={votes}
                 myVote={players[0].votedFor}
                 onVote={handleVotePlayer}
+                disabled={hasVoted}
                 />
             <MajorityModal
                 isOpen={showMajorityModal}
