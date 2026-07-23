@@ -1,6 +1,6 @@
 // logic/checkWinner.js
 
-export function checkWinner(players, isVote = true) {
+export function checkWinner(players, isVote = true, votedPlayer) {
     const alive = players.filter(player => player.alive);
 
     const werewolf = alive.find(p => p.role === "werewolf");
@@ -24,7 +24,7 @@ export function checkWinner(players, isVote = true) {
     }
 
     // Jester dies -> Jester wins
-    if (!jester && isVote) {
+    if (!jester && votedPlayer.role === 'jester') {
         return {
             gameOver: true,
             winner: "jester",

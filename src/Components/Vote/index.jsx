@@ -1,203 +1,426 @@
-import React, {useState, useEffect, useMemo, useRef} from "react";
+import React, {
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from "react";
+
 import CutScene from "../CutScene";
-import VoteBg from '../../assets/background/vote.png'
-import VotePixelIcon from '../../assets/icon/vote.png'
+import VoteBg from "../../assets/background/vote.png";
+import VotePixelIcon from "../../assets/icon/vote.png";
+
 import Avatar from "../Avatar";
 import VoteModal from "./voteModal";
-import useStore from "@/Store/useStore";
 import MajorityModal from "./majorityModal";
-import NightResultModal from "../Night/nightResultModal";
+
+import useStore from "@/Store/useStore";
 import { npcVote } from "@/logic/npcVoting";
 import { delay, randomDelay } from "@/utils/async";
 import { checkWinner } from "@/logic/checkWinner";
 
 const Vote = ({
     data,
-    playerId,
-    onNextPhase
+    onNextPhase,
 }) => {
     const players = data.players;
-    const alivePlayers = players.filter(player => player.alive)
-    const everyOneVoted = alivePlayers.every(player => player.hasVoted);
 
-    //use ref
+    const alivePlayers = useMemo(
+        () => players.filter((player) => player.alive),
+        [players]
+    );
 
+    const humanPlayer =
+        players.find((player) => player.isHuman) ??
+        players[0];
+
+    /*
+     * Count votes from alive players only.
+     *
+     * Also verify that the selected target is still alive.
+     */
     const votes = useMemo(() => {
-        return alivePlayers.reduce((acc, player) => {
-
-            if (player.votedFor !== null) {
-
-                acc[player.votedFor] =
-                    (acc[player.votedFor] || 0) + 1;
-
+        return alivePlayers.reduce((accumulator, voter) => {
+            if (voter.votedFor == null) {
+                return accumulator;
             }
 
-            return acc;
+            const validTarget = alivePlayers.some(
+                (player) => player.id === voter.votedFor
+            );
 
+            if (!validTarget) {
+                return accumulator;
+            }
+
+            accumulator[voter.votedFor] =
+                (accumulator[voter.votedFor] ?? 0) + 1;
+
+            return accumulator;
         }, {});
+    }, [alivePlayers]);
 
-    }, [players]);
+    const everyoneVoted =
+        alivePlayers.length > 0 &&
+        alivePlayers.every(
+            (player) =>
+                player.hasVoted === true &&
+                player.votedFor != null
+        );
 
     const eliminatedPlayer = useMemo(() => {
-        if (Object.keys(votes).length === 0) return null;
+        const voteEntries = Object.entries(votes);
 
-        const highestVotePlayerId = Object.entries(votes).reduce(
-            (winner, current) => {
-                const [winnerId, winnerVotes] = winner;
-                const [currentId, currentVotes] = current;
+        if (voteEntries.length === 0) {
+            return null;
+        }
 
-                return currentVotes > winnerVotes ? current : winner;
+        const [highestVotePlayerId] = voteEntries.reduce(
+            (highest, current) => {
+                const [, highestVotes] = highest;
+                const [, currentVotes] = current;
+
+                return currentVotes > highestVotes
+                    ? current
+                    : highest;
             }
-        )[0];
-
-        return players.find(
-            player => player.id === Number(highestVotePlayerId)
         );
 
-    }, [votes, players]);
+        return alivePlayers.find(
+            (player) =>
+                player.id === Number(highestVotePlayerId)
+        ) ?? null;
+    }, [votes, alivePlayers]);
 
-    const voteResult = {
-        type: "vote-eliminate",
-        targetId: eliminatedPlayer?.id || null
-    };
+    const [showCutScene, setShowCutScene] =
+        useState(true);
 
-    const [showCutScene, setShowCutScene] = useState(true);
-    const [showVoteModal, setShowVoteModal] = useState(false);
-    const [showMajorityModal, setShowMajorityModal] = useState(false);
-    const [hasVoted, setHasVoted] = useState(false);
-    const [showEventModal, setShowEventModal] = useState(false);
-    const [voteEvent, setVoteEvent] = useState();
+    const [showVoteModal, setShowVoteModal] =
+        useState(false);
 
+    const [showMajorityModal, setShowMajorityModal] =
+        useState(false);
 
-    const votePlayer = useStore((state) => state.votePlayer);
-    const clearVote = useStore((state) => state.clearVote);
-    const killPlayer = useStore((state) => state.killPlayer);
-    const setWinner = useStore((state) => state.setWinner)
+    /*
+     * Prevent the NPC voting process from starting twice.
+     */
+    const npcVotingStartedRef = useRef(false);
 
-    const handleCutSceneFinish = async () => {
-        setShowCutScene(false);
-        setShowVoteModal(true);
-        await npcVoting();
-    };
+    /*
+     * Prevent the result logic from running more than once.
+     */
+    const voteResolvedRef = useRef(false);
 
-    const handleVotePlayer = async (targetId) => {
-        setHasVoted(true)
-        votePlayer(
-            players[0].id,
-            targetId
+    /*
+     * Used to cancel an old async NPC loop if the component
+     * unmounts or a new voting run starts.
+     */
+    const npcVotingRunRef = useRef(0);
+
+    const votePlayer = useStore(
+        (state) => state.votePlayer
+    );
+
+    const clearVote = useStore(
+        (state) => state.clearVote
+    );
+
+    const killPlayer = useStore(
+        (state) => state.killPlayer
+    );
+
+    const setWinner = useStore(
+        (state) => state.setWinner
+    );
+
+    /*
+     * Select a fallback target if npcVote returns null or
+     * points to an invalid/dead target.
+     */
+    const getFallbackTarget = (
+        npc,
+        latestPlayers
+    ) => {
+        const availableTargets = latestPlayers.filter(
+            (player) =>
+                player.alive &&
+                player.id !== npc.id
         );
-        
-    }
+
+        if (availableTargets.length === 0) {
+            return null;
+        }
+
+        const randomIndex = Math.floor(
+            Math.random() * availableTargets.length
+        );
+
+        return availableTargets[randomIndex].id;
+    };
 
     const npcVoting = async () => {
+        /*
+         * Every run receives an ID. If a new run starts or the
+         * component unmounts, the old run stops.
+         */
+        const currentRun =
+            ++npcVotingRunRef.current;
 
-        for (const npc of alivePlayers) {
+        /*
+         * Get only the voter IDs initially. We read the latest
+         * Zustand state again before every vote.
+         */
+        const npcIds = useStore
+            .getState()
+            .game
+            .players
+            .filter(
+                (player) =>
+                    player.alive &&
+                    !player.isHuman
+            )
+            .map((player) => player.id);
 
-            if (npc.isHuman) continue;
-            if(!npc.alive) continue;
-
-            const targetId = npcVote(npc, players);
-
+        for (const npcId of npcIds) {
             await delay(randomDelay());
 
-            votePlayer(
-                npc.id,
-                targetId
-            );
-        }
-
-    };
-
-    const handleCloseMajorityModalClose = async () => {
-        if (eliminatedPlayer) {
-            killPlayer(eliminatedPlayer.id);
-        }
-
-        
-        setShowMajorityModal(false);
-        clearVote();
-        
-
-        onNextPhase('Night');
-    }
-
-
-    useEffect(() => {
-        if(everyOneVoted){
-            setShowVoteModal(false);
-            const updatedPlayers = players.map(player =>
-                player.id === eliminatedPlayer.id
-                    ? { ...player, alive: false }
-                    : player
-            );
-
-            const winner = checkWinner(updatedPlayers);
-
-            if (winner.gameOver) {
-                setShowEventModal(true)
-                setWinner(winner);
-                onNextPhase("GameOver");
+            if (
+                currentRun !==
+                npcVotingRunRef.current
+            ) {
                 return;
             }
-            setShowMajorityModal(true);
 
+            const latestPlayers =
+                useStore.getState().game.players;
+
+            const npc = latestPlayers.find(
+                (player) => player.id === npcId
+            );
+
+            /*
+             * NPC could have died, already voted, or disappeared
+             * while waiting.
+             */
+            if (
+                !npc ||
+                !npc.alive ||
+                npc.hasVoted
+            ) {
+                continue;
+            }
+
+            let targetId = npcVote(
+                npc,
+                latestPlayers
+            );
+
+            const selectedTarget =
+                latestPlayers.find(
+                    (player) =>
+                        player.id === targetId
+                );
+
+            const invalidTarget =
+                targetId == null ||
+                !selectedTarget ||
+                !selectedTarget.alive ||
+                selectedTarget.id === npc.id;
+
+            if (invalidTarget) {
+                targetId = getFallbackTarget(
+                    npc,
+                    latestPlayers
+                );
+            }
+
+            if (targetId == null) {
+                console.warn(
+                    `${npc.name} has no valid voting target.`
+                );
+
+                continue;
+            }
+
+            console.log(
+                `${npc.name} votes for player ${targetId}`
+            );
+
+            votePlayer(npc.id, targetId);
+        }
+    };
+
+    const handleCutSceneFinish = () => {
+        /*
+         * CutScene may finish through both a timeout and a user
+         * click. This guard prevents two NPC voting loops.
+         */
+        if (npcVotingStartedRef.current) {
+            return;
         }
 
-    },[players])
+        npcVotingStartedRef.current = true;
 
+        setShowCutScene(false);
+        setShowVoteModal(true);
+
+        void npcVoting();
+    };
+
+    const handleVotePlayer = (targetId) => {
+        if (!humanPlayer?.alive) return;
+        if (humanPlayer.hasVoted) return;
+
+        const target = alivePlayers.find(
+            (player) => player.id === targetId
+        );
+
+        if (!target) return;
+
+        votePlayer(
+            humanPlayer.id,
+            targetId
+        );
+    };
+
+    /*
+     * Open the result modal exactly once after every living
+     * player has submitted a valid vote.
+     */
+    useEffect(() => {
+        if (!everyoneVoted) return;
+        if (!eliminatedPlayer) return;
+        if (voteResolvedRef.current) return;
+
+        voteResolvedRef.current = true;
+
+        setShowVoteModal(false);
+        setShowMajorityModal(true);
+    }, [everyoneVoted, eliminatedPlayer]);
+
+    const handleCloseMajorityModal = () => {
+        if (!eliminatedPlayer) return;
+        console.log('eliminated player: ', eliminatedPlayer)
+
+        /*
+         * Create the expected post-elimination state locally
+         * for checking the winner.
+         */
+        const updatedPlayers = players.map(
+            (player) =>
+                player.id === eliminatedPlayer.id
+                    ? {
+                          ...player,
+                          alive: false,
+                          hasVoted: false,
+                          votedFor: null,
+                      }
+                    : {
+                          ...player,
+                          hasVoted: false,
+                          votedFor: null,
+                      }
+        );
+
+        killPlayer(eliminatedPlayer.id);
+        clearVote();
+
+        setShowMajorityModal(false);
+
+        const winner =
+            checkWinner(updatedPlayers, true,eliminatedPlayer);
+
+        if (winner.gameOver) {
+            setWinner(winner);
+            onNextPhase("GameOver");
+            return;
+        }
+
+        onNextPhase("Night");
+    };
+
+    /*
+     * Stop any unfinished asynchronous voting loop when Vote
+     * unmounts.
+     */
+    useEffect(() => {
+        return () => {
+            npcVotingRunRef.current += 1;
+        };
+    }, []);
 
     return (
         <>
-            {
-                showCutScene && 
+            {showCutScene && (
                 <CutScene
                     type={data.phase}
                     day={data.day}
                     onFinish={handleCutSceneFinish}
                     icon={VotePixelIcon}
                 />
-            }
-            <NightResultModal
-                event={voteResult}
-                players={players}
-                onContinue={() =>{}}
-            />
+            )}
+
             <VoteModal
                 isOpen={showVoteModal}
                 players={alivePlayers}
                 votes={votes}
-                myVote={players[0].votedFor}
+                myVote={
+                    humanPlayer?.votedFor ?? null
+                }
                 onVote={handleVotePlayer}
-                disabled={hasVoted}
-                />
+                disabled={
+                    !humanPlayer?.alive ||
+                    humanPlayer?.hasVoted
+                }
+            />
+
             <MajorityModal
                 isOpen={showMajorityModal}
-                eliminatedPlayer={eliminatedPlayer}
+                eliminatedPlayer={
+                    eliminatedPlayer
+                }
                 players={players}
-                onContinue={handleCloseMajorityModalClose}
+                onContinue={
+                    handleCloseMajorityModal
+                }
             />
-            <div 
-                className="flex w-screen h-screen bg-[#010306] justify-center items-center overflow-hidden bg-cover">
-                
-                <div 
-                    className="relative w-full max-w-[1200px] aspect-[1/1] bg-cover bg-center"
-                    style={{ backgroundImage: `url(${VoteBg})` }}
-                >
 
-                    {players.map((player) => {
-                        return (
+            <div
+                className="
+                    flex
+                    h-screen
+                    w-screen
+                    items-center
+                    justify-center
+                    overflow-hidden
+                    bg-[#010306]
+                    bg-cover
+                "
+            >
+                <div
+                    className="
+                        relative
+                        aspect-square
+                        w-full
+                        max-w-[1200px]
+                        bg-cover
+                        bg-center
+                    "
+                    style={{
+                        backgroundImage: `url(${VoteBg})`,
+                    }}
+                >
+                    {players.map((player) => (
                         <Avatar
                             key={player.id}
                             data={player}
                             top={player.position.top}
-                            left={player.position.left}/>
-                        )
-                    })}
-                    
+                            left={player.position.left}
+                        />
+                    ))}
                 </div>
             </div>
         </>
-    )
-}
+    );
+};
 
 export default Vote;

@@ -46,11 +46,10 @@ const Night = ({
     //too see if this player have power
     const currentRole = roles.find((role) => role.id === players[0].role);
     const currentPlayer = players[0];
-
-    console.log('current game night state: ', data)
     
     const [showCutScene, setShowCutScene] = useState(true);
     const [isOpenActionModal, setIsOpenActionModal] = useState(false);
+    const [revealEvent, setRevealEvent] = useState(null);
     const [isOpenRevealModal, setIsOpenRevealModal] = useState(false);
     const [isOpenResultModal, setIsOpenResultModal] = useState(false);
     const [nightResolved, setNightResolved] = useState(false);
@@ -81,15 +80,27 @@ const Night = ({
         if(currentRole.havePower){
             nightAction(currentRole.id, targetPlayer);
         }
+
         if(currentRole.id === "shaman"|| currentRole.id === "seer"){
             const targPlay = players.find((player) => player.id === targetPlayer)
             addKnowledge(
                 currentRole.id,
                 targetPlayer,
                 targPlay.role
-            )
+            );
+            setRevealEvent({
+                type:
+                    currentRole.id === "seer"
+                        ? "seer-reveal"
+                        : "shaman-reveal",
+
+                actor: currentRole.id,
+                targetId: targPlay.id,
+                targetRole: targPlay.role,
+            });
+            setIsOpenRevealModal(true)
         }
-        console.log("current data at night : " , data)
+
     }
 
     const npcDoAction = async () => {
@@ -128,32 +139,40 @@ const Night = ({
                 shamanReveal
             );
 
+            console.log('role: ', role, 'target: ', target);
             // The NPC completed its turn but chose not to act.
             if (!target) {
                 nightAction(role, "skip");
                 continue;
             }
 
-            if (role === "shaman") {
+            if (
+                role === "shaman" ||
+                role === "seer"
+            ) {
                 addKnowledge(
-                    "shaman",
+                    role,
                     target.id,
                     target.role
                 );
-            }
-            if(role === "seer"){
-                addKnowledge(
-                    "seer",
-                    target.id,
-                    target.role
-                )
             }
 
             nightAction(role, target.id);
         }
     };
 
+    const handleRevealContinue = () => {
+        console.log('is reveal open: ', isOpenRevealModal, 'reveal content: ', revealEvent)
+
+        if(!revealEvent) return;
+
+        setIsOpenRevealModal(false);
+        setRevealEvent(null);
+
+    }
+
     useEffect(() => {
+
         if (showCutScene) return;
         if (npcActionsStarted.current) return;
 
@@ -199,7 +218,6 @@ const Night = ({
 
         const gameResult = checkWinner(players, false);
 
-        console.log('game winner : ', gameResult)
         if (gameResult.gameOver) {
             setWinner(gameResult);
             setPhase("GameOver");
@@ -237,7 +255,16 @@ const Night = ({
                 onClose={() => setIsOpenActionModal(false)}
             />
             <NightResultModal
-                isOpen={results.length > 0}
+                isOpen={isOpenRevealModal}
+                event={revealEvent}
+                players={players}
+                current={0}
+                total={1}
+                onNext={handleRevealContinue}
+            
+            />
+            <NightResultModal
+                isOpen={results.length > 0 && !isOpenRevealModal}
                 event={results[currentResult]}
                 players={players}
                 current={currentResult}

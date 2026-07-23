@@ -30,7 +30,13 @@ function Game() {
   //to start the game
   const handleOnstart = () => {
       initializeGame(data.playerName, data.mode);
-      console.log(currentState)
+      setData({
+        playerName: "",
+        roomName: "",
+        maxPlayer: 2,
+        roomCode : "",
+        mode: ""
+      })
   }
 
   const handlePhase = (phase) => {
