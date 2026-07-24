@@ -24,7 +24,7 @@ export function checkWinner(players, isVote = true, votedPlayer) {
     }
 
     // Jester dies -> Jester wins
-    if (!jester && votedPlayer.role === 'jester') {
+    if (!jester && isVote &&  votedPlayer.role === 'jester') {
         return {
             gameOver: true,
             winner: "jester",

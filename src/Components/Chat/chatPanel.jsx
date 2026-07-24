@@ -189,7 +189,7 @@ export default function ChatPanel({
           </span>
         </div>
         <Button
-            onClick={() => onEndDiscussion(PHASE.VOTE)}
+            onClick={() => onEndDiscussion()}
             className="mt-4 ml-4 w-[150px] text-black text-[10px] bg-[#e11d48] border-none rounded-md" size='sm'>End Discussion</Button>
 
         {/* ── chat history ── */}

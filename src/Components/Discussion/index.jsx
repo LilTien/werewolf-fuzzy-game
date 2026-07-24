@@ -8,7 +8,8 @@ import CardRevealAnimation from "../Animation/CardReveal";
 import Avatar from "../Avatar";
 import ChatPanel from "../Chat/chatPanel";
 import CutScene from "../CutScene";
-
+import RulePopup from "../Popup/rule";
+import { PHASE } from '@/constant/phase'
 
 const Discussion = ({
     data,
@@ -19,12 +20,13 @@ const Discussion = ({
     const [isCardAnimationOpen, setIsCardAnimationOpen] = useState(day < 2);//set to true
     const [selectedPlayer, setSelectedPlayer] = useState('');
     const [showCutScene, setShowCutScene] = useState(day > 1);
-
+    const [isShowRule, setIsShowRule] = useState(false);
+    
     const updateRelation = useStore((state) => state.updateRelation);
     const updateSpoken = useStore((state) => state.updateSpoken)
     const gameState = useStore((state) => state.game);
-
     const players = data.players;
+    const currentPlayer = players[0];
 
     const handleCloseCardAnimation = () => {
         setIsCardAnimationOpen(false);
@@ -74,13 +76,15 @@ const Discussion = ({
                 // Safety check (shouldn't happen, but prevents crashes)
                 if (!relation) continue;
     
-                updateRelation(
-                    observer.id,
-                    target.id,
-                    {
-                        suspicion: relation.suspicion + 10,
-                    }
-                );
+                if(observer.id !== target.id){
+                    updateRelation(
+                        observer.id,
+                        target.id,
+                        {
+                            suspicion: relation.suspicion + 10,
+                        }
+                    );
+                }
             }
         }else if (type === "defend"){
             for (const observer of players) {
@@ -113,17 +117,37 @@ const Discussion = ({
 
     };
 
+    const handleCutSceneFinish = (day) => {
+        setShowCutScene(false);
+        if(day === 1){
+
+            setIsShowRule(true);
+        }
+
+    }
+
+    const handleEndDiscussion = () => {
+        updateSpoken(
+            currentPlayer.id,
+            false
+        )
+        onNextSession(PHASE.VOTE);
+    }
+
 
 
     console.log(gameState)
 
     return (
         <>
+            <RulePopup
+                isOpen={isShowRule}
+                onClose={() => setIsShowRule(false)}/>
             {showCutScene && (
                 <CutScene
                     type={gameState.phase}
                     day={gameState.day}
-                    onFinish={() => setShowCutScene(false)}
+                    onFinish={handleCutSceneFinish(gameState.day)}
                     icon={SunPixelIcon}
                 />
             )}
@@ -165,7 +189,7 @@ const Discussion = ({
                     myRole={data.players[0].role}
                     myId={data.players[0].id}
                     onAction={handlePlayerAction}
-                    onEndDiscussion={onNextSession}/>
+                    onEndDiscussion={handleEndDiscussion}/>
 
             </div>
         </>

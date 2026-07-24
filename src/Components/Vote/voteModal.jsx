@@ -12,6 +12,7 @@ const VoteModal = ({
 
     const [selectedPlayer, setSelectedPlayer] = useState(myVote);
 
+
     if (!isOpen) return null;
 
     return (
@@ -33,7 +34,7 @@ const VoteModal = ({
                             player={player}
                             totalVotes={votes[player.id] ?? 0}
                             selected={selectedPlayer === player.id}
-                            onClick={() => setSelectedPlayer(player.id)}
+                            onClick={() => setSelectedPlayer(player.id === 0 ? null : player.id)}
                         />
 
                     ))}

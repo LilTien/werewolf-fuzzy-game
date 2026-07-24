@@ -32,29 +32,52 @@ export const nightResultConfig = {
     },
 
     "wrong-kill": {
-        title: ({ target }) =>
-            `The Knight was punished`,
+        title: () =>
+            "The Knight was punished",
 
         description: ({ target }) =>
-            `The Knight killed ${target.name}(${target.role}). The Knight also died.`,
+            `${target.name} was innocent. As punishment for killing the wrong person, the Knight also died.`,
 
         image: DefaultAvatar,
     },
 
     "reveal": {
         title: ({ target }) =>
-            `${target.name}'s role revealed`,
+            `${target.name}'s role was revealed`,
 
         description: ({ target }) =>
-            `${target.name} is a ${target.role}.`,
+            `${target.name} is the ${target.role}.`,
 
         image: DefaultAvatar,
     },
 
     "vote-eliminate": {
-        title: ({ target }) => `${target.name} was executed`,
+        title: ({ target }) =>
+            `${target.name} was executed`,
+
         description: ({ target }) =>
             `The village voted to eliminate ${target.name} (${target.role}).`,
+
+        image: DefaultAvatar,
+    },
+
+    "seer-reveal": {
+        title: () =>
+            "A Vision Appears",
+
+        description: ({ target }) =>
+            `Your vision reveals that ${target.name} is the ${target.role}.`,
+
+        image: DefaultAvatar,
+    },
+
+    "shaman-reveal": {
+        title: () =>
+            "The Spirits Whisper",
+
+        description: ({ target }) =>
+            `The spirits reveal that ${target.name} is the ${target.role}.`,
+
         image: DefaultAvatar,
     },
 };

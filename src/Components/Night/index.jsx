@@ -45,6 +45,7 @@ const Night = ({
     const npcActionsStarted = useRef(false);
     //too see if this player have power
     const currentRole = roles.find((role) => role.id === players[0].role);
+    const alivePlayers = players.filter((player) => player.alive)
     const currentPlayer = players[0];
     
     const [showCutScene, setShowCutScene] = useState(true);
@@ -66,6 +67,7 @@ const Night = ({
             })
             .map((player) => player.role);
     }, [players]);
+    console.log('open reveal: ', isOpenRevealModal)
 
     const nightAction = useStore((state) => state.nightAction);
     const addKnowledge = useStore((state) => state.addKnowledge);
@@ -76,18 +78,37 @@ const Night = ({
     const setPhase = useStore((state) => state.setPhase);
 
 
-    const handleNightAction =async (targetPlayer) => {
-        if(currentRole.havePower){
-            nightAction(currentRole.id, targetPlayer);
+    const handleNightAction = (selectedTarget) => {
+        const targetId =
+            typeof selectedTarget === "object"
+                ? selectedTarget.id
+                : selectedTarget;
+
+        const targetPlayer = players.find(
+            (player) => player.id === targetId
+        );
+
+        if (!targetPlayer) {
+            console.error(
+                "Selected night target was not found:",
+                selectedTarget
+            );
+
+            return;
         }
 
-        if(currentRole.id === "shaman"|| currentRole.id === "seer"){
-            const targPlay = players.find((player) => player.id === targetPlayer)
-            addKnowledge(
-                currentRole.id,
-                targetPlayer,
-                targPlay.role
-            );
+        // Close the selection modal first.
+        setIsOpenActionModal(false);
+
+        if (
+            currentRole.id === "seer" ||
+            currentRole.id === "shaman"
+        ) {
+            /*
+            * Do not call nightAction yet.
+            * Calling it now marks the role as finished and may
+            * immediately resolve the entire night.
+            */
             setRevealEvent({
                 type:
                     currentRole.id === "seer"
@@ -95,13 +116,20 @@ const Night = ({
                         : "shaman-reveal",
 
                 actor: currentRole.id,
-                targetId: targPlay.id,
-                targetRole: targPlay.role,
+                targetId: targetPlayer.id,
+                targetRole: targetPlayer.role,
             });
-            setIsOpenRevealModal(true)
+
+            setIsOpenRevealModal(true);
+            return;
         }
 
-    }
+        // Werewolf, Doctor and Knight complete immediately.
+        nightAction(
+            currentRole.id,
+            targetPlayer.id
+        );
+    };
 
     const npcDoAction = async () => {
         for (const role of NIGHT_ORDER) {
@@ -135,7 +163,7 @@ const Night = ({
 
             const target = npcNightAction(
                 npc,
-                latestGame.players,
+                alivePlayers,
                 shamanReveal
             );
 
@@ -162,14 +190,21 @@ const Night = ({
     };
 
     const handleRevealContinue = () => {
-        console.log('is reveal open: ', isOpenRevealModal, 'reveal content: ', revealEvent)
+        if (!revealEvent) return;
 
-        if(!revealEvent) return;
+        addKnowledge(
+            revealEvent.actor,
+            revealEvent.targetId,
+            revealEvent.targetRole
+        );
+        nightAction(
+            revealEvent.actor,
+            revealEvent.targetId
+        );
 
         setIsOpenRevealModal(false);
         setRevealEvent(null);
-
-    }
+    };
 
     useEffect(() => {
 
@@ -255,13 +290,14 @@ const Night = ({
                 onClose={() => setIsOpenActionModal(false)}
             />
             <NightResultModal
-                isOpen={isOpenRevealModal}
+                isOpen={
+                    isOpenRevealModal 
+                }
                 event={revealEvent}
                 players={players}
                 current={0}
                 total={1}
                 onNext={handleRevealContinue}
-            
             />
             <NightResultModal
                 isOpen={results.length > 0 && !isOpenRevealModal}
