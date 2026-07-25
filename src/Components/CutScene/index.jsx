@@ -60,8 +60,9 @@ const CutScene = ({
             {SESSION_TEXT[type]}
           </h1>
 
-          <div className="w-24 h-24 border-2 border-dashed border-zinc-500 rounded-full flex items-center justify-center text-zinc-500">
-            {icon ?? "ICON"}
+          <div className="w-24 h-24  rounded-full flex items-center justify-center text-zinc-500">
+            <img
+             src={icon || ""}/>
           </div>
 
         </div>

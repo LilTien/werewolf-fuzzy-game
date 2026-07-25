@@ -2,7 +2,10 @@ import React, {useState} from 'react'
 import StartGame from '../Components/StartGame'
 import useStore from '@/Store/useStore'
 import Discussion from '@/Components/Discussion'
-import CutScene from '@/Components/CutScene'
+import Vote from '@/Components/Vote'
+import Night from '@/Components/Night'
+import GameOver from '@/Components/GameOver'
+import roles from '@/constant/roles'
 
 function Game() {
 
@@ -15,19 +18,38 @@ function Game() {
      mode: ""
   })
   const [gameType, setGameType] = useState('single-player');
-  const [showCutScene, setShowCutScene] = useState(false);
-
 
   //global state
   const initializeGame = useStore((state) => state.initializeGame);
   const currentState = useStore((state) => state.game);
+  const setPhase = useStore((state) => state.setPhase);
+  const nextDay = useStore((state) => state.nextDay);
+  const resetGame = useStore((state) => state.resetGame);
+
+
   
 
 
   //to start the game
   const handleOnstart = () => {
       initializeGame(data.playerName, data.mode);
-      console.log(currentState)
+      setData({
+        playerName: "",
+        roomName: "",
+        maxPlayer: 2,
+        roomCode : "",
+        mode: ""
+      })
+  }
+
+  const handlePhase = (phase) => {
+    console.log('phase: ', phase)
+    setPhase(phase)
+  }
+
+  const handleNextDay = () => {
+    setPhase('Discussion')
+    nextDay();
   }
 
   const handleOnChangeData = (e) => {
@@ -53,10 +75,33 @@ function Game() {
         currentState.phase === "Discussion" ? 
         (
           <Discussion
-            data={currentState}/>
+            data={currentState}
+            onNextSession={handlePhase}/>
         )
         :
-        (<></>)
+        currentState.phase === "Vote" ? 
+
+        (<Vote
+          data={currentState}
+          onNextPhase={handlePhase}/>)
+
+        : 
+        currentState.phase === "Night" ? 
+        (<Night
+          data={currentState}
+          onNextDay={handleNextDay}/>)
+        :
+        currentState.phase === "GameOver" ? 
+        (
+          <GameOver
+              data={currentState}
+              onBackToStart={resetGame}
+          />
+        )
+        :
+        (<>
+        Hello world
+        </>)
       }
       
     </>

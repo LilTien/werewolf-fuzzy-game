@@ -2,14 +2,14 @@ import npcNames from "@/constant/npcNames";
 import roles from "@/constant/roles";
 
 const avatarPositions = [
-  { top: "46%", left: "50%" },
-  { top: "45%", left: "65%" },
-  { top: "50%", left: "66%" },
-  { top: "55%", left: "62%" },
-  { top: "52%", left: "50%" },
-  { top: "55%", left: "55%" },
-  { top: "43%", left: "54%" },
-  { top: "43%", left: "61%" },
+  { top: "35%", left: "40%" },
+  { top: "45%", left: "40%" },
+  { top: "52%", left: "38%" },
+  { top: "58%", left: "43%" },
+  { top: "60%", left: "50%" },
+  { top: "57%", left: "58%" },
+  { top: "50%", left: "60%" },
+  { top: "43%", left: "57%" },
 ];
 
 export function generatePlayers(playerName, totalPlayer = 8) {
@@ -28,24 +28,49 @@ export function generatePlayers(playerName, totalPlayer = 8) {
         // Splice returns an array of removed items, we take the first one [0]
         return availableRoles.splice(randomIndex, 1)[0].value;
     };
+
+    const createAbility = (role) => {
+        if(role === "knight" || role === "doctor" || role === "shaman" || role === "seer" || role === "werewolf"){
+            return {
+                canUse: true
+            }
+        }else {
+            return {
+                canUse : false
+            }
+        }
+    } 
     // 3. Assign role to the Human Player
+
+    const playerRole = getAndRemoveRandomRole();
     players.push({
         id: 0,
         name: playerName,
-        role: getAndRemoveRandomRole(),
+        role: playerRole,
         isHuman: true,
         alive: true ,
-        position: { top: "46%", left: "50%" }
+        hasSpoken: false,
+        ability: createAbility(playerRole),
+        knowledge: {
+            revealedRole: []
+        },
+        position: { top: "40%", left: "49%" }
     });
 
     // 4. Assign roles to NPCs
     for (let i = 1; i < totalPlayer; i++) {
+        const npcRoles = getAndRemoveRandomRole();
         players.push({
             id: i,
             name: npcNames[i - 1] || `NPC ${i}`, 
-            role: getAndRemoveRandomRole(),
+            role: npcRoles,
             isHuman: false,
+            ability: createAbility(npcRoles),
+            knowledge: {
+                revealedRole: []
+            },
             alive: true,
+            hasSpoken: false,
             position: avatarPositions[i]
         });
     }
@@ -58,6 +83,7 @@ export function generatePlayers(playerName, totalPlayer = 8) {
             if(player.id === target.id) continue;
 
             player.relations[target.id] = {
+                playerId: target.id,
                 suspicion: Math.floor(Math.random() * 11),
                 voteErraticness : 0,
                 previousLies: 0,

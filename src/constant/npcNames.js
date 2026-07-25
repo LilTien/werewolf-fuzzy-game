@@ -3,8 +3,8 @@ const npcNames = [
     "Pidut",
     "Munyit",
     "Mamu",
-    "AfiqKelantan",
-    "AfiqPenang",
+    "Farifi",
+    "Afiq",
     "Koppa",
     "Intan",
     "Fariz"
