@@ -1,4 +1,5 @@
 import DefaultAvatar from "@/assets/avatar/avatar.png";
+import WerewolfScratch from '@/assets/avatar/werewolf_scratch.png'
 
 export const nightResultConfig = {
     "werewolf-kill": {
@@ -8,7 +9,7 @@ export const nightResultConfig = {
         description: ({ target }) =>
             `During the night, ${target.name} (${target.role}) was attacked by the Werewolf.`,
 
-        image: DefaultAvatar,
+        image: WerewolfScratch,
     },
 
     "doctor-save": {

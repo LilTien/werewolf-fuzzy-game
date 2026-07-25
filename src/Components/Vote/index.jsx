@@ -145,6 +145,119 @@ const Vote = ({
             state.applyWrongVotePenalty
     );
 
+    const addPreviousLies = useStore(
+        (state) => state.addPreviousLies
+    );
+
+    const resetDiscussion = useStore(
+        (state) => state.resetDiscussion
+    );
+
+    const applyFalseWerewolfAccusationLies = () => {
+        if (!eliminatedPlayer) return;
+
+        const accusations =
+            data.discussion?.accuse ?? [];
+
+        /*
+        * Check whether every living player voted
+        * for the eliminated player.
+        */
+        const unanimousVote =
+            alivePlayers.length > 0 &&
+            alivePlayers.every(
+                (player) =>
+                    Number(player.votedFor) ===
+                    Number(eliminatedPlayer.id)
+            );
+
+        if (!unanimousVote) return;
+
+        /*
+        * The accusation was correct.
+        */
+        if (eliminatedPlayer.role === "werewolf") {
+            return;
+        }
+
+        /*
+        * Find everyone who specifically claimed that
+        * the eliminated player was the Werewolf.
+        */
+        const falseAccuserIds = [
+            ...new Set(
+                accusations
+                    .filter(
+                        (accusation) =>
+                            Number(
+                                accusation.targetId
+                            ) ===
+                                Number(
+                                    eliminatedPlayer.id
+                                ) &&
+                            accusation.roleClaimed ===
+                                "werewolf"
+                    )
+                    .map((accusation) =>
+                        Number(
+                            accusation.senderId
+                        )
+                    )
+            ),
+        ];
+
+        /*
+        * All living observers increase previousLies
+        * toward each false accuser.
+        */
+        for (const accuserId of falseAccuserIds) {
+            addPreviousLies(
+                accuserId,
+                40
+            );
+        }
+    };
+    const applyAccusationVoteLies = () => {
+        const accusations =
+            data.discussion?.accuse ?? [];
+
+        for (const accusation of accusations) {
+            const speaker = players.find(
+                (player) =>
+                    Number(player.id) ===
+                    Number(accusation.senderId)
+            );
+
+            if (!speaker) continue;
+
+            /*
+            * The speaker did not participate in voting.
+            */
+            if (speaker.votedFor == null) {
+                continue;
+            }
+
+            const accusedPlayerId =
+                Number(accusation.targetId);
+
+            const votedPlayerId =
+                Number(speaker.votedFor);
+
+            /*
+            * They accused one player but voted for
+            * somebody else.
+            */
+            if (
+                accusedPlayerId !== votedPlayerId
+            ) {
+                addPreviousLies(
+                    speaker.id,
+                    35
+                );
+            }
+        }
+    };
+
     /*
      * Select a fallback target if npcVote returns null or
      * points to an invalid/dead target.
@@ -311,7 +424,10 @@ const Vote = ({
     }, [everyoneVoted, eliminatedPlayer]);
 
     const handleCloseMajorityModal = () => {
+
         if (!eliminatedPlayer) return;
+        applyAccusationVoteLies();
+        applyFalseWerewolfAccusationLies();
 
         const eliminatedWasInnocent =
             INNOCENT_ROLES.includes(

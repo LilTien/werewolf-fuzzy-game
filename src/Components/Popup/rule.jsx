@@ -6,37 +6,37 @@ const GAME_RULES = [
         icon: "🌙",
         title: "The Night Falls",
         description:
-            "When darkness covers the village, every surviving character with a special ability secretly chooses an action. The Werewolf hunts, the Doctor protects, the Seer searches for truth, and the Shaman whispers information to the darkness.",
+            "Special roles secretly perform their actions. The Werewolf hunts, the Doctor protects, and information roles search for the truth.",
     },
     {
         icon: "💬",
         title: "Trust No One",
         description:
-            "When morning arrives, the survivors discuss what happened. Players may accuse, defend, lie, manipulate, or remain suspiciously quiet. Every word can change how the village sees you.",
+            "During discussion, players accuse, defend, deceive, or remain silent. Every statement can change how others see them.",
     },
     {
         icon: "🗳️",
         title: "The Village Decides",
         description:
-            "After the discussion, every living player votes for someone to eliminate. The player with the most votes is executed and their true role is revealed.",
+            "Every living player votes. The player with the most votes is eliminated and their true role is revealed.",
     },
     {
         icon: "🐺",
         title: "Werewolf Victory",
         description:
-            "The Werewolf wins when only three players remain while the Werewolf is still alive. At that point, fear has conquered the village and nobody has enough power left to stop the final hunt.",
+            "The Werewolf wins when only three players remain while the Werewolf is still alive.",
     },
     {
         icon: "🏘️",
         title: "Village Victory",
         description:
-            "The Village team wins when the Werewolf is killed. Doctor, Seer, Knight, and ordinary Villagers all share this victory—even those who did not survive long enough to see the sunrise.",
+            "The Village team wins when the Werewolf is eliminated.",
     },
     {
         icon: "🃏",
         title: "Jester Victory",
         description:
-            "The Jester does not care who controls the village. The Jester wins only by convincing everyone to eliminate them during the voting phase. Death is not their defeat—it is their final performance.",
+            "The Jester wins by convincing the village to eliminate them during the voting phase.",
     },
 ];
 
@@ -45,43 +45,43 @@ const ROLE_RULES = [
         role: "Werewolf",
         team: "Darkness",
         rule:
-            "Choose one player to attack every night. Survive the village vote and reduce the village to three remaining players.",
+            "Attack one player every night and survive until only three players remain.",
     },
     {
         role: "Shaman",
         team: "Darkness",
         rule:
-            "Reveal one player's role each night and secretly guide the Werewolf toward the most dangerous targets. If the Werewolf falls, your protection disappears with them.",
+            "Reveal roles and secretly help the Werewolf select dangerous targets.",
     },
     {
         role: "Doctor",
         team: "Village",
         rule:
-            "Protect one player every night. If you protect the Werewolf's target, that player survives until morning.",
+            "Protect one player each night from the Werewolf's attack.",
     },
     {
         role: "Seer",
         team: "Village",
         rule:
-            "Reveal one player's true role every night. Knowledge is powerful, but revealing too much may expose you to the Werewolf.",
+            "Reveal one player's true role every night.",
     },
     {
         role: "Knight",
         team: "Village",
         rule:
-            "You may strike one player with your blade. Kill an evil role and you become a hero. Kill an innocent player and the village will punish you with death.",
+            "Strike one player. Killing an innocent causes the Knight to die too.",
     },
     {
         role: "Villager",
         team: "Village",
         rule:
-            "You have no supernatural ability. Your greatest weapons are observation, discussion, suspicion, and your vote.",
+            "Use discussion, observation, and voting to uncover the Werewolf.",
     },
     {
         role: "Jester",
         team: "Alone",
         rule:
-            "Act suspicious without making your plan too obvious. Your goal is to be eliminated by the village vote.",
+            "Appear suspicious enough to be eliminated by the village.",
     },
 ];
 
@@ -102,6 +102,7 @@ const RulePopup = ({
             document.body.style.overflow;
 
         document.body.style.overflow = "hidden";
+
         window.addEventListener(
             "keydown",
             handleEscape
@@ -120,6 +121,30 @@ const RulePopup = ({
 
     if (!isOpen) return null;
 
+    const getTeamStyle = (team) => {
+        if (team === "Darkness") {
+            return `
+                border-red-500/25
+                bg-red-500/10
+                text-red-300
+            `;
+        }
+
+        if (team === "Village") {
+            return `
+                border-emerald-500/25
+                bg-emerald-500/10
+                text-emerald-300
+            `;
+        }
+
+        return `
+            border-purple-500/25
+            bg-purple-500/10
+            text-purple-300
+        `;
+    };
+
     return (
         <div
             className="
@@ -129,10 +154,12 @@ const RulePopup = ({
                 flex
                 items-center
                 justify-center
-                bg-black/80
-                p-3
+                overflow-hidden
+                bg-black/75
+                p-4
                 backdrop-blur-md
-                sm:p-6
+
+                [@media(max-height:520px)]:p-2
             "
             onClick={onClose}
         >
@@ -146,54 +173,57 @@ const RulePopup = ({
                 className="
                     relative
                     flex
-                    max-h-[94vh]
+                    h-[88vh]
                     w-full
-                    max-w-5xl
+                    max-w-[920px]
                     flex-col
                     overflow-hidden
-                    rounded-3xl
-                    border-2
+                    rounded-2xl
+                    border
                     border-amber-300/20
                     bg-[#11100f]/95
                     shadow-2xl
                     shadow-black
+
+                    [@media(max-height:600px)]:h-[94vh]
+                    [@media(max-height:600px)]:max-w-[980px]
                 "
             >
-                {/* Decorative background */}
                 <div
                     className="
                         pointer-events-none
                         absolute
                         inset-0
-                        bg-[radial-gradient(circle_at_top,_rgba(245,158,11,0.12),_transparent_42%)]
+                        bg-[radial-gradient(circle_at_top,_rgba(245,158,11,0.1),_transparent_42%)]
                     "
                 />
 
-                {/* Header */}
-                <div
+                {/* Compact header */}
+                <header
                     className="
                         relative
                         flex
-                        items-start
+                        shrink-0
+                        items-center
                         justify-between
                         border-b
                         border-white/10
                         bg-black/30
                         px-5
-                        py-5
-                        sm:px-8
-                        sm:py-6
+                        py-3
+
+                        [@media(max-height:520px)]:px-4
+                        [@media(max-height:520px)]:py-2
                     "
                 >
                     <div>
                         <p
                             className="
-                                text-[10px]
+                                text-[8px]
                                 font-bold
                                 uppercase
-                                tracking-[0.45em]
+                                tracking-[0.35em]
                                 text-amber-400
-                                sm:text-xs
                             "
                         >
                             Before the moon rises
@@ -202,13 +232,16 @@ const RulePopup = ({
                         <h1
                             id="game-rules-title"
                             className="
-                                mt-2
-                                text-3xl
+                                mt-1
+                                text-xl
                                 font-black
                                 uppercase
-                                tracking-wider
+                                tracking-wide
                                 text-white
-                                sm:text-5xl
+
+                                sm:text-2xl
+
+                                [@media(max-height:520px)]:text-lg
                             "
                         >
                             Rules of the Village
@@ -216,21 +249,18 @@ const RulePopup = ({
 
                         <p
                             className="
-                                mt-3
-                                max-w-2xl
-                                text-sm
-                                leading-6
+                                mt-1
+                                max-w-xl
+                                text-[10px]
+                                leading-4
                                 text-stone-400
-                                sm:text-base
+
+                                sm:text-xs
                             "
                         >
-                            By day, everyone is a
-                            neighbour. By night,
-                            somebody becomes the
-                            hunter. Watch carefully,
-                            speak wisely, and never
-                            trust a friendly face too
-                            quickly.
+                            Survive the night, question
+                            every story, and never trust
+                            too easily.
                         </p>
                     </div>
 
@@ -241,158 +271,177 @@ const RulePopup = ({
                         className="
                             ml-4
                             flex
-                            h-10
-                            w-10
+                            h-8
+                            w-8
                             shrink-0
                             items-center
                             justify-center
-                            rounded-xl
+                            rounded-lg
                             border
                             border-white/10
                             bg-white/5
-                            text-2xl
+                            text-lg
                             font-bold
                             text-stone-400
                             transition
-                            hover:scale-105
                             hover:bg-white/10
                             hover:text-white
                         "
                     >
                         ×
                     </button>
-                </div>
+                </header>
 
-                {/* Scrollable content */}
+                {/* Compact two-column content */}
                 <div
                     className="
                         relative
+                        grid
+                        min-h-0
+                        flex-1
+                        grid-cols-1
+                        gap-5
                         overflow-y-auto
                         px-5
-                        py-6
-                        sm:px-8
-                        sm:py-8
+                        py-4
+
+                        md:grid-cols-[1fr_1.05fr]
+
+                        [@media(orientation:landscape)]:grid-cols-[1fr_1.05fr]
+
+                        [@media(max-height:520px)]:gap-3
+                        [@media(max-height:520px)]:px-4
+                        [@media(max-height:520px)]:py-3
                     "
                 >
-                    <section>
-                        <div className="mb-5">
+                    {/* General rules */}
+                    <section className="min-w-0">
+                        <div className="mb-3">
                             <p
                                 className="
-                                    text-xs
+                                    text-[8px]
                                     font-bold
                                     uppercase
-                                    tracking-[0.3em]
+                                    tracking-[0.25em]
                                     text-red-400
                                 "
                             >
-                                How the game works
+                                How it works
                             </p>
 
                             <h2
                                 className="
                                     mt-1
-                                    text-2xl
+                                    text-base
                                     font-black
                                     text-white
+
+                                    [@media(max-height:520px)]:text-sm
                                 "
                             >
-                                Survive. Deceive.
-                                Decide.
+                                Survive. Deceive. Decide.
                             </h2>
                         </div>
 
                         <div
                             className="
                                 grid
-                                gap-4
-                                md:grid-cols-2
+                                grid-cols-1
+                                gap-2
+
+                                sm:grid-cols-2
+                                md:grid-cols-1
+                                lg:grid-cols-2
+
+                                [@media(orientation:landscape)]:grid-cols-2
                             "
                         >
-                            {GAME_RULES.map(
-                                (rule) => (
-                                    <article
-                                        key={rule.title}
+                            {GAME_RULES.map((rule) => (
+                                <article
+                                    key={rule.title}
+                                    className="
+                                        rounded-xl
+                                        border
+                                        border-white/10
+                                        bg-white/[0.035]
+                                        p-3
+                                        transition
+                                        hover:border-amber-300/20
+                                        hover:bg-white/[0.06]
+
+                                        [@media(max-height:520px)]:p-2
+                                    "
+                                >
+                                    <div
                                         className="
-                                            rounded-2xl
-                                            border
-                                            border-white/10
-                                            bg-white/[0.04]
-                                            p-5
-                                            transition
-                                            duration-300
-                                            hover:-translate-y-1
-                                            hover:border-amber-300/25
-                                            hover:bg-white/[0.07]
+                                            flex
+                                            items-start
+                                            gap-2
                                         "
                                     >
                                         <div
                                             className="
                                                 flex
-                                                items-start
-                                                gap-4
+                                                h-8
+                                                w-8
+                                                shrink-0
+                                                items-center
+                                                justify-center
+                                                rounded-lg
+                                                border
+                                                border-white/10
+                                                bg-black/30
+                                                text-base
+
+                                                [@media(max-height:520px)]:h-7
+                                                [@media(max-height:520px)]:w-7
+                                                [@media(max-height:520px)]:text-sm
                                             "
                                         >
-                                            <div
+                                            {rule.icon}
+                                        </div>
+
+                                        <div className="min-w-0">
+                                            <h3
                                                 className="
-                                                    flex
-                                                    h-12
-                                                    w-12
-                                                    shrink-0
-                                                    items-center
-                                                    justify-center
-                                                    rounded-2xl
-                                                    border
-                                                    border-white/10
-                                                    bg-black/30
-                                                    text-2xl
+                                                    text-[11px]
+                                                    font-black
+                                                    leading-4
+                                                    text-white
                                                 "
                                             >
-                                                {
-                                                    rule.icon
-                                                }
-                                            </div>
+                                                {rule.title}
+                                            </h3>
 
-                                            <div>
-                                                <h3
-                                                    className="
-                                                        text-lg
-                                                        font-black
-                                                        text-white
-                                                    "
-                                                >
-                                                    {
-                                                        rule.title
-                                                    }
-                                                </h3>
+                                            <p
+                                                className="
+                                                    mt-1
+                                                    text-[9px]
+                                                    leading-4
+                                                    text-stone-400
 
-                                                <p
-                                                    className="
-                                                        mt-2
-                                                        text-sm
-                                                        leading-6
-                                                        text-stone-400
-                                                    "
-                                                >
-                                                    {
-                                                        rule.description
-                                                    }
-                                                </p>
-                                            </div>
+                                                    [@media(max-height:520px)]:text-[8px]
+                                                    [@media(max-height:520px)]:leading-3
+                                                "
+                                            >
+                                                {rule.description}
+                                            </p>
                                         </div>
-                                    </article>
-                                )
-                            )}
+                                    </div>
+                                </article>
+                            ))}
                         </div>
                     </section>
 
-                    <section className="mt-10">
-                        <div className="mb-5">
+                    {/* Role rules */}
+                    <section className="min-w-0">
+                        <div className="mb-3">
                             <p
                                 className="
-                                    text-xs
+                                    text-[8px]
                                     font-bold
                                     uppercase
-                                    tracking-[0.3em]
+                                    tracking-[0.25em]
                                     text-amber-400
                                 "
                             >
@@ -402,20 +451,21 @@ const RulePopup = ({
                             <h2
                                 className="
                                     mt-1
-                                    text-2xl
+                                    text-base
                                     font-black
                                     text-white
+
+                                    [@media(max-height:520px)]:text-sm
                                 "
                             >
-                                Every soul has a
-                                purpose
+                                Every soul has a purpose
                             </h2>
                         </div>
 
                         <div
                             className="
                                 overflow-hidden
-                                rounded-2xl
+                                rounded-xl
                                 border
                                 border-white/10
                                 bg-black/20
@@ -427,17 +477,21 @@ const RulePopup = ({
                                         key={role.role}
                                         className={`
                                             grid
+                                            grid-cols-[72px_70px_1fr]
+                                            items-center
                                             gap-2
-                                            px-5
-                                            py-5
+                                            px-3
+                                            py-2
                                             transition
                                             hover:bg-white/[0.04]
-                                            sm:grid-cols-[150px_110px_1fr]
-                                            sm:items-start
+
+                                            [@media(max-height:520px)]:grid-cols-[62px_62px_1fr]
+                                            [@media(max-height:520px)]:px-2
+                                            [@media(max-height:520px)]:py-1.5
+
                                             ${
                                                 index !==
-                                                ROLE_RULES.length -
-                                                    1
+                                                ROLE_RULES.length - 1
                                                     ? "border-b border-white/10"
                                                     : ""
                                             }
@@ -445,8 +499,12 @@ const RulePopup = ({
                                     >
                                         <h3
                                             className="
+                                                truncate
+                                                text-[10px]
                                                 font-black
                                                 text-white
+
+                                                [@media(max-height:520px)]:text-[9px]
                                             "
                                         >
                                             {role.role}
@@ -457,21 +515,16 @@ const RulePopup = ({
                                                 w-fit
                                                 rounded-full
                                                 border
-                                                px-3
+                                                px-2
                                                 py-1
-                                                text-[10px]
+                                                text-[7px]
                                                 font-bold
                                                 uppercase
-                                                tracking-wider
-                                                ${
-                                                    role.team ===
-                                                    "Darkness"
-                                                        ? "border-red-500/30 bg-red-500/10 text-red-400"
-                                                        : role.team ===
-                                                          "Village"
-                                                        ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
-                                                        : "border-purple-500/30 bg-purple-500/10 text-purple-400"
-                                                }
+                                                tracking-wide
+
+                                                ${getTeamStyle(
+                                                    role.team
+                                                )}
                                             `}
                                         >
                                             {role.team}
@@ -479,9 +532,12 @@ const RulePopup = ({
 
                                         <p
                                             className="
-                                                text-sm
-                                                leading-6
+                                                text-[9px]
+                                                leading-4
                                                 text-stone-400
+
+                                                [@media(max-height:520px)]:text-[8px]
+                                                [@media(max-height:520px)]:leading-3
                                             "
                                         >
                                             {role.rule}
@@ -490,67 +546,67 @@ const RulePopup = ({
                                 )
                             )}
                         </div>
-                    </section>
 
-                    <div
-                        className="
-                            mt-8
-                            rounded-2xl
-                            border
-                            border-amber-400/20
-                            bg-amber-400/[0.06]
-                            p-5
-                            text-center
-                        "
-                    >
-                        <p
+                        <div
                             className="
-                                text-sm
-                                font-bold
-                                leading-6
-                                text-amber-200
+                                mt-3
+                                rounded-xl
+                                border
+                                border-amber-400/15
+                                bg-amber-400/[0.05]
+                                px-3
+                                py-2
                             "
                         >
-                            Remember: the loudest
-                            player may be innocent,
-                            the quietest player may be
-                            watching, and the person
-                            saving your life tonight
-                            may vote against you
-                            tomorrow.
-                        </p>
-                    </div>
+                            <p
+                                className="
+                                    text-center
+                                    text-[9px]
+                                    font-bold
+                                    leading-4
+                                    text-amber-200/80
+                                "
+                            >
+                                The loudest player may be
+                                innocent, and the quietest
+                                player may be watching.
+                            </p>
+                        </div>
+                    </section>
                 </div>
 
-                {/* Footer */}
-                <div
+                {/* Compact footer */}
+                <footer
                     className="
                         relative
                         flex
+                        shrink-0
                         justify-center
                         border-t
                         border-white/10
                         bg-black/30
                         px-5
-                        py-4
-                        sm:px-8
+                        py-3
+
+                        [@media(max-height:520px)]:py-2
                     "
                 >
                     <Button
                         onClick={onClose}
                         variant="primary"
-                        size="md"
+                        size="sm"
                         className="
                             w-full
-                            max-w-[280px]
-                            text-sm
+                            max-w-[210px]
+                            py-2
+                            text-[10px]
                             uppercase
                             tracking-wider
                         "
                     >
                         Enter the Village
                     </Button>
-                </div>
+                </footer>
             </div>
         </div>
     );

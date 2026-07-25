@@ -348,7 +348,99 @@ const useStore = create((set) => ({
                     }
                 ),
             },
-        })),    
+        })), 
+    addPreviousLies: (
+        liarId,
+        amount,
+        observerIds = null
+    ) =>
+        set((state) => {
+            const allowedObservers =
+                observerIds === null
+                    ? null
+                    : new Set(
+                        observerIds.map(Number)
+                    );
+
+            return {
+                game: {
+                    ...state.game,
+
+                    players:
+                        state.game.players.map(
+                            (observer) => {
+                                /*
+                                * Dead players no longer observe
+                                * discussion events.
+                                */
+                                if (!observer.alive) {
+                                    return observer;
+                                }
+
+                                /*
+                                * A player does not maintain a
+                                * relation toward themselves.
+                                */
+                                if (
+                                    Number(observer.id) ===
+                                    Number(liarId)
+                                ) {
+                                    return observer;
+                                }
+
+                                /*
+                                * When observerIds is provided,
+                                * only those players detect the lie.
+                                */
+                                if (
+                                    allowedObservers &&
+                                    !allowedObservers.has(
+                                        Number(
+                                            observer.id
+                                        )
+                                    )
+                                ) {
+                                    return observer;
+                                }
+
+                                const relation =
+                                    observer.relations?.[
+                                        liarId
+                                    ] ??
+                                    observer.relations?.[
+                                        String(liarId)
+                                    ] ??
+                                    {};
+
+                                const currentLies =
+                                    Number(
+                                        relation.previousLies
+                                    ) || 0;
+
+                                return {
+                                    ...observer,
+
+                                    relations: {
+                                        ...(observer.relations ??
+                                            {}),
+
+                                        [liarId]: {
+                                            ...relation,
+
+                                            previousLies:
+                                                Math.min(
+                                                    100,
+                                                    currentLies +
+                                                        amount
+                                                ),
+                                        },
+                                    },
+                                };
+                            }
+                        ),
+                },
+            };
+        }),   
 
 }));
 

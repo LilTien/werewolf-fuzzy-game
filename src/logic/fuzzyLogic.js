@@ -203,9 +203,9 @@ export function calculateFuzzyTrust({
             .map((rule) => rule.weight)
     );
 
-    const EXECUTE_CENTER = 85;
-    const OBSERVE_CENTER = 55;
-    const ALLIANCE_CENTER = 20;
+    const EXECUTE_CENTER = 100;
+    const OBSERVE_CENTER = 50;
+    const ALLIANCE_CENTER = 0;
 
     const numerator =
         executeClipped * EXECUTE_CENTER +

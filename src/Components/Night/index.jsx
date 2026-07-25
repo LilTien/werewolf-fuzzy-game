@@ -78,15 +78,32 @@ const Night = ({
     const setPhase = useStore((state) => state.setPhase);
 
 
-    const handleNightAction = (selectedTarget) => {
+    const handleNightAction = (
+        selectedTarget
+    ) => {
+        if (
+            selectedTarget === "skip"
+        ) {
+            nightAction(
+                currentRole.id,
+                "skip"
+            );
+
+            setIsOpenActionModal(false);
+            return;
+        }
+
         const targetId =
-            typeof selectedTarget === "object"
+            typeof selectedTarget ===
+            "object"
                 ? selectedTarget.id
                 : selectedTarget;
 
-        const targetPlayer = players.find(
-            (player) => player.id === targetId
-        );
+        const targetPlayer =
+            players.find(
+                (player) =>
+                    player.id === targetId
+            );
 
         if (!targetPlayer) {
             console.error(
@@ -97,34 +114,30 @@ const Night = ({
             return;
         }
 
-        // Close the selection modal first.
         setIsOpenActionModal(false);
 
         if (
             currentRole.id === "seer" ||
             currentRole.id === "shaman"
         ) {
-            /*
-            * Do not call nightAction yet.
-            * Calling it now marks the role as finished and may
-            * immediately resolve the entire night.
-            */
             setRevealEvent({
                 type:
-                    currentRole.id === "seer"
+                    currentRole.id ===
+                    "seer"
                         ? "seer-reveal"
                         : "shaman-reveal",
 
                 actor: currentRole.id,
-                targetId: targetPlayer.id,
-                targetRole: targetPlayer.role,
+                targetId:
+                    targetPlayer.id,
+                targetRole:
+                    targetPlayer.role,
             });
 
             setIsOpenRevealModal(true);
             return;
         }
 
-        // Werewolf, Doctor and Knight complete immediately.
         nightAction(
             currentRole.id,
             targetPlayer.id
@@ -204,6 +217,25 @@ const Night = ({
 
         setIsOpenRevealModal(false);
         setRevealEvent(null);
+    };
+
+    const handleSkipNightAction = () => {
+        if (!currentRole) return;
+
+        if (currentRole.id !== "knight") {
+            return;
+        }
+
+        /*
+        * "skip" means the role has completed
+        * its night turn without selecting anyone.
+        */
+        nightAction(
+            currentRole.id,
+            "skip"
+        );
+
+        setIsOpenActionModal(false);
     };
 
     useEffect(() => {
@@ -287,7 +319,7 @@ const Night = ({
                 currentPlayer={currentPlayer}
                 players={players}
                 onConfirm={handleNightAction}
-                onClose={() => setIsOpenActionModal(false)}
+                onSkip={handleSkipNightAction}
             />
             <NightResultModal
                 isOpen={
