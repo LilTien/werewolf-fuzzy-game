@@ -18,6 +18,14 @@ import { npcVote } from "@/logic/npcVoting";
 import { delay, randomDelay } from "@/utils/async";
 import { checkWinner } from "@/logic/checkWinner";
 
+
+const INNOCENT_ROLES = [
+    "villager",
+    "doctor",
+    "seer",
+    "knight",
+];
+
 const Vote = ({
     data,
     onNextPhase,
@@ -130,6 +138,11 @@ const Vote = ({
 
     const setWinner = useStore(
         (state) => state.setWinner
+    );
+
+    const applyWrongVotePenalty = useStore(
+        (state) =>
+            state.applyWrongVotePenalty
     );
 
     /*
@@ -299,35 +312,77 @@ const Vote = ({
 
     const handleCloseMajorityModal = () => {
         if (!eliminatedPlayer) return;
-        console.log('eliminated player: ', eliminatedPlayer)
+
+        const eliminatedWasInnocent =
+            INNOCENT_ROLES.includes(
+                eliminatedPlayer.role
+            );
 
         /*
-         * Create the expected post-elimination state locally
-         * for checking the winner.
-         */
+        * Save the voters before clearVote() removes
+        * their votedFor values.
+        */
+        const wrongVoterIds = players
+            .filter(
+                (player) =>
+                    player.alive &&
+                    Number(player.votedFor) ===
+                        Number(
+                            eliminatedPlayer.id
+                        )
+            )
+            .map((player) => player.id);
+
+        /*
+        * Every living observer becomes more suspicious
+        * of those who voted for an innocent player.
+        */
+        if (
+            eliminatedWasInnocent &&
+            wrongVoterIds.length > 0
+        ) {
+            applyWrongVotePenalty({
+                eliminatedPlayerId:
+                    eliminatedPlayer.id,
+
+                voterIds: wrongVoterIds,
+
+                amount: 15,
+            });
+        }
+
         const updatedPlayers = players.map(
             (player) =>
-                player.id === eliminatedPlayer.id
+                player.id ===
+                eliminatedPlayer.id
                     ? {
-                          ...player,
-                          alive: false,
-                          hasVoted: false,
-                          votedFor: null,
-                      }
+                        ...player,
+                        alive: false,
+                        hasVoted: false,
+                        votedFor: null,
+                    }
                     : {
-                          ...player,
-                          hasVoted: false,
-                          votedFor: null,
-                      }
+                        ...player,
+                        hasVoted: false,
+                        votedFor: null,
+                    }
         );
 
         killPlayer(eliminatedPlayer.id);
+
+        /*
+        * Must happen after wrongVoterIds has
+        * already been collected.
+        */
         clearVote();
 
         setShowMajorityModal(false);
 
-        const winner =
-            checkWinner(updatedPlayers, true,eliminatedPlayer);
+        const winner = checkWinner(
+            updatedPlayers,
+            true,
+            eliminatedPlayer
+        );
 
         if (winner.gameOver) {
             setWinner(winner);

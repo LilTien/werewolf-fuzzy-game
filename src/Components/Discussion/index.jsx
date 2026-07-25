@@ -17,14 +17,19 @@ const Discussion = ({
 }) => {
 
     const day = data.day;
+    //local state
     const [isCardAnimationOpen, setIsCardAnimationOpen] = useState(day < 2);//set to true
     const [selectedPlayer, setSelectedPlayer] = useState('');
     const [showCutScene, setShowCutScene] = useState(day > 1);
     const [isShowRule, setIsShowRule] = useState(false);
     
+    //global state
     const updateRelation = useStore((state) => state.updateRelation);
     const updateSpoken = useStore((state) => state.updateSpoken)
     const gameState = useStore((state) => state.game);
+    const recordDiscussion = useStore((state) => state.recordDiscussion);
+
+    
     const players = data.players;
     const currentPlayer = players[0];
 
@@ -40,8 +45,11 @@ const Discussion = ({
     } 
 
     const handlePlayerAction = (action) => {
-        const { type, target, message } = action;
+        const { type, target, message, subOption } = action;
         const senderId = message.senderId;
+        const claimedRole = subOption;
+
+        console.log('action: ', action)
 
         const sender = players.find(p => p.id === senderId);
 
@@ -85,6 +93,13 @@ const Discussion = ({
                         }
                     );
                 }
+                updateRelation(
+                    observer.id,
+                    sender.id,
+                    {
+                        aggression: relation.aggression + 10
+                    }
+                )
             }
         }else if (type === "defend"){
             for (const observer of players) {
@@ -105,15 +120,26 @@ const Discussion = ({
                 // Safety check (shouldn't happen, but prevents crashes)
                 if (!relation) continue;
     
+                if(observer.id !== target.id){
+                    updateRelation(
+                        observer.id,
+                        target.id,
+                        {
+                            suspicion: Math.max(relation.suspicion - 10, 0),
+                        }
+                    );
+                }
+
                 updateRelation(
                     observer.id,
-                    target.id,
+                    sender.id,
                     {
-                        suspicion: Math.max(relation.suspicion - 10, 0),
+                        aggression: relation.aggression + 5
                     }
-                );
+                )
             }
         }
+        recordDiscussion(senderId, type, target.id, claimedRole)
 
     };
 
@@ -133,7 +159,6 @@ const Discussion = ({
         )
         onNextSession(PHASE.VOTE);
     }
-
 
 
     console.log(gameState)

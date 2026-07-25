@@ -24,7 +24,11 @@ const createInitialGameState = () => ({
             seer: [], //this both will store like [{target: 1, role : 'werewolf'}]
             shaman: [],
         }
-      }
+    },
+    discussion: {
+        accuse: [],
+        defend: []
+    }
   });
 
 const useStore = create((set) => ({
@@ -59,6 +63,10 @@ const useStore = create((set) => ({
                     seer: [], //this both will store like [{target: 1, role : 'werewolf'}]
                     shaman: [],
                 }
+            },
+            discussion: {
+                accuse: [],
+                defend: []
             }
         }
 
@@ -91,6 +99,28 @@ const useStore = create((set) => ({
                     };
                 }),
             },
+    })),
+
+    recordDiscussion : (senderId, type, targetId, roleClaimed) => set((state) => ({
+        game: {
+            ...state.game,
+            discussion: {
+                ...state.game.discussion,
+                [type] : [
+                    ...state.game.discussion[type],
+                    {senderId : senderId, targetId: targetId, roleClaimed: roleClaimed}
+                ]
+            }
+        }
+    })),
+    resetDiscussion: () => set((state) => ({
+        game: {
+            ...state.game,
+            discussion: {
+                accuse: [],
+                defend: []
+            }
+        }
     })),
   updateSpoken: (playerId, spoken) => set((state) => ({
     game: {
@@ -235,7 +265,90 @@ const useStore = create((set) => ({
 
             }
         }
-    }))
+    })),
+
+
+    //this one is for vote erraticness
+    applyWrongVotePenalty: ({
+        eliminatedPlayerId,
+        voterIds,
+        amount = 15,
+    }) =>
+        set((state) => ({
+            game: {
+                ...state.game,
+
+                players: state.game.players.map(
+                    (observer) => {
+                        /*
+                        * The eliminated player cannot observe
+                        * what happens after their death.
+                        */
+                        if (
+                            observer.id ===
+                            eliminatedPlayerId
+                        ) {
+                            return observer;
+                        }
+
+                        /*
+                        * Only living players update their
+                        * opinions of the wrong voters.
+                        */
+                        if (!observer.alive) {
+                            return observer;
+                        }
+
+                        let updatedRelations = {
+                            ...(observer.relations ?? {}),
+                        };
+
+                        for (const voterId of voterIds) {
+                            /*
+                            * A player should not evaluate
+                            * their own vote behaviour.
+                            */
+                            if (observer.id === voterId) {
+                                continue;
+                            }
+
+                            const existingRelation =
+                                updatedRelations[voterId] ??
+                                updatedRelations[
+                                    String(voterId)
+                                ] ??
+                                {};
+
+                            const previousValue =
+                                Number(
+                                    existingRelation
+                                        .voteErraticness
+                                ) || 0;
+
+                            updatedRelations = {
+                                ...updatedRelations,
+
+                                [voterId]: {
+                                    ...existingRelation,
+
+                                    voteErraticness:
+                                        Math.min(
+                                            100,
+                                            previousValue +
+                                                amount
+                                        ),
+                                },
+                            };
+                        }
+
+                        return {
+                            ...observer,
+                            relations: updatedRelations,
+                        };
+                    }
+                ),
+            },
+        })),    
 
 }));
 
