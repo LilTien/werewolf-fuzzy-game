@@ -3,14 +3,17 @@ import Villager from '../../assets/character/fox-villager.png'
 import Werewolf from '../../assets/character/werewolf.png'
 import Seer from '../../assets/character/seer.png'
 import Doctor from '../../assets/character/doctor.png'
+import Knight from '../../assets/character/knight.png'
+import Jester from '../../assets/character/jester.png'
+import Shaman from '../../assets/character/shaman.png'
 
 const characterList = [
     { name: 'Villager', description: 'Has no special powers but must use logic and daily voting to find and eliminate the werewolves.', image: Villager },
     { name: 'Werewolf', description: 'Can kill a player every night. Wins when they eliminate enough villagers to equal or outnumber them.', image:Werewolf  },
-    { name: 'Shaman', description: 'Can commune with the mystical world to discover the exact roles of deceased players or speak with the dead.', image: '' },
-    { name: 'Knight', description: 'A powerful defender who can protect a player from night attacks, or fight back against suspected threats.', image: '' },
+    { name: 'Shaman', description: 'Can commune with the mystical world to discover the exact roles of deceased players or speak with the dead.', image: Shaman },
+    { name: 'Knight', description: 'A powerful defender who can protect a player from night attacks, or fight back against suspected threats.', image: Knight },
     { name: 'Doctor', description: 'Can choose one player to heal each night. If that player is attacked by a werewolf, they survive.', image: Doctor },
-    { name: 'Jester', description: 'Wants to get caught. Wins the game instantly if they successfully trick the village into voting them out during the day.', image: '' },
+    { name: 'Jester', description: 'Wants to get caught. Wins the game instantly if they successfully trick the village into voting them out during the day.', image: Jester },
     { name: 'Seer', description: 'Can look into the crystal ball each night to reveal the true identity of one chosen player.', image: Seer }
 ];
 
@@ -37,7 +40,7 @@ function CharacterPicker({ selectedCharacter = 0, onSelectCharacter }) {
                     key={index}
                     onClick={() => onSelectCharacter(index)}
                     className={`
-                        w-[65px] h-[65px] bg-[#8B5A2B] cursor-pointer relative
+                        w-[45px] h-[45px] sm:w-[65px] sm:h-[65px] bg-[#8B5A2B] cursor-pointer relative
                         border-4 
                         shadow-[inset_-4px_-4px_0_0_#5c3a1a,inset_4px_4px_0_0_#b3763b]
                         ${isSelected ? 'border-yellow-400 scale-105' : 'border-white hover:border-gray-300'}

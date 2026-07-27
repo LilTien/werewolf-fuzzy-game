@@ -11,6 +11,8 @@ import CharacterPanel from '../Components/Character/characterPanel'
 import RulesPanel from '../Components/List/ruleList'
 import { fuzzyProcess } from '../constant/fuzzy'
 import { useNavigate } from 'react-router-dom'
+import LogicBreakdownModal from '@/Components/Modal/logicBreakdown'
+import ProjectPlan from '@/Components/ProjectPlan'
 
 import DarkVillageBg from '../assets/background/ripped_background.png'
 import WereWolfTxt from '../assets/text/werewolftext.png'
@@ -34,12 +36,25 @@ function Home() {
         previousLies: 30,
         aggression: 40,
     });
+    const [
+      isLogicBreakdownOpen,
+      setIsLogicBreakdownOpen,
+    ] = useState(false);
 
     const handleChange = (key, val) => {
         setValues((prev) => ({ ...prev, [key]: val }))
     }
 
-    const { memberships, finalTrust, directive, allRules, firedRules } = useFuzzyLogic(values)
+    const {
+      memberships,
+      finalTrust,
+      directive,
+      allRules,
+      firedRules,
+      clipped,
+      trustZ,
+      defuzzification,
+  } = useFuzzyLogic(values);
 
   return (
     <>
@@ -82,11 +97,10 @@ function Home() {
             {/* Left - Title + Description */}
             <div>
               <h1 className="text-3xl md:text-4xl font-extrabold text-[#636A27] mb-4">
-                Designed for 6–7 Players
+                Social Deduction Game
               </h1>
               <p className="text-sm md:text-[13px] leading-relaxed text-stone-700">
-                A quick, fun social deduction game to play with friends and family. Based on the
-                classic Werewolf / Mafia party game format.
+                Werewolf Fuzzy Trust System is a single-player social deduction game that applies fuzzy logic to control the behaviour of non-player characters. During the game, each NPC evaluates other players using four behavioural variables: Suspicion, Vote Erraticness, Previous Lies, and Aggression.
               </p>
             </div>
 
@@ -240,7 +254,76 @@ function Home() {
       </div>
       <div className='w-screen bg-[#541F24] '>
             <div className="max-w-6xl mx-auto px-6 md:px-10 py-16">
-                <h1 className='text-4xl text-white text-center mb-16'>Fuzzy Variables</h1>
+                <div
+                    className="
+                        mb-10
+                        flex
+                        flex-col
+                        items-center
+                        justify-between
+                        gap-4
+
+                        sm:flex-row
+                        sm:items-end
+                    "
+                >
+                    <div>
+                        <p
+                            className="
+                                text-[9px]
+                                font-bold
+                                uppercase
+                                tracking-[0.3em]
+                                text-white/50
+                            "
+                        >
+                            Interactive simulator
+                        </p>
+
+                        <h1
+                            className="
+                                mt-1
+                                text-3xl
+                                font-black
+                                text-white
+
+                                sm:text-4xl
+                            "
+                        >
+                            Fuzzy Variables
+                        </h1>
+                    </div>
+
+                    <button
+                        type="button"
+                        onClick={() =>
+                            setIsLogicBreakdownOpen(
+                                true
+                            )
+                        }
+                        className="
+                            border
+                            border-white/35
+                            bg-black/20
+                            px-5
+                            py-2.5
+                            text-[10px]
+                            font-black
+                            uppercase
+                            tracking-[0.15em]
+                            text-white
+                            transition
+                            rounded-md
+
+                            hover:bg-white
+                            hover:text-[#541F24]
+
+                            active:scale-95
+                        "
+                    >
+                        View Full Logic Breakdown
+                    </button>
+                </div>
                 <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-[280px_1fr_320px] gap-6">
                     {/* LEFT: Sliders */}
                     <div className="order-1">
@@ -271,6 +354,22 @@ function Home() {
             </div>
 
       </div>
+      <ProjectPlan />
+      <LogicBreakdownModal
+        isOpen={isLogicBreakdownOpen}
+        onClose={() =>
+            setIsLogicBreakdownOpen(false)
+        }
+        values={values}
+        memberships={memberships}
+        firedRules={firedRules}
+        allRules={allRules}
+        clipped={clipped}
+        trustZ={trustZ}
+        finalTrust={finalTrust}
+        directive={directive}
+        defuzzification={defuzzification}
+    />
     </>
   )
 }
