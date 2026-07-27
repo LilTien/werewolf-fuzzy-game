@@ -31,6 +31,7 @@ const Vote = ({
     onNextPhase,
 }) => {
     const players = data.players;
+    console.log('vote data: ', data)
 
     const alivePlayers = useMemo(
         () => players.filter((player) => player.alive),

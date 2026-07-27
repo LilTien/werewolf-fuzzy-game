@@ -5,6 +5,37 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Apply scrollbar styling to the whole app */
+html {
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: #8b5e3c #24160f; /* thumb track */
+}
+
+/* Chrome, Edge, Safari */
+::-webkit-scrollbar {
+  width: 10px;  /* Y-axis scrollbar */
+  height: 10px; /* X-axis scrollbar */
+}
+
+::-webkit-scrollbar-track {
+  background: #24160f;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #8b5e3c;
+  border-radius: 999px;
+  border: 2px solid #24160f;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #b47a4f;
+}
+
+/* Bottom-right corner when both scrollbars appear */
+::-webkit-scrollbar-corner {
+  background: #24160f;
+}
+
 @font-face {
   font-family: 'PixelFont';
   src: url('./assets/fonts/DePixelHalbfett.ttf') format('truetype');
